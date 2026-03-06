@@ -3,11 +3,9 @@ package com.taskflow.service;
 import com.taskflow.dto.TaskDTO;
 import com.taskflow.dto.TaskSummaryDTO;
 import com.taskflow.exception.BadRequestException;
+import com.taskflow.exception.ForbiddenException;
 import com.taskflow.exception.ResourceNotFoundException;
-import com.taskflow.model.Task;
-import com.taskflow.model.TaskPriority;
-import com.taskflow.model.TaskStatus;
-import com.taskflow.model.User;
+import com.taskflow.model.*;
 import com.taskflow.repository.TaskRepository;
 import com.taskflow.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -111,11 +109,18 @@ public class TaskService {
                 .dueDate(taskDTO.getDueDate())
                 .user(user);
 
-        // F-EXT-02: Handle assignment(F-EXT-02 Means Which Features are Expand in second phase of project)
+        // F-EXT-02: Handle assignment — only ADMIN/MANAGER can assign
         if (taskDTO.getAssignedToId() != null) {
+            if (user.getRole() != Role.ADMIN && user.getRole() != Role.MANAGER) {
+                throw new ForbiddenException("Only Admin or Manager can assign tasks");
+            }
             User assignee = userRepository.findById(taskDTO.getAssignedToId())
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Assignee user not found with id: " + taskDTO.getAssignedToId()));
+            // Assignee must be DEVELOPER or TESTER
+            if (assignee.getRole() != Role.DEVELOPER && assignee.getRole() != Role.TESTER) {
+                throw new BadRequestException("Tasks can only be assigned to Developer or Tester");
+            }
             builder.assignedTo(assignee);
         }
 
@@ -164,11 +169,17 @@ public class TaskService {
             existingTask.setPriority(taskDTO.getPriority());
         }
 
-        // F-EXT-02: Handle assignment change(F-EXT-02 Means Which Features are Expand in second phase of project)
+        // F-EXT-02: Handle assignment change — only ADMIN/MANAGER can assign
         if (taskDTO.getAssignedToId() != null) {
+            if (user.getRole() != Role.ADMIN && user.getRole() != Role.MANAGER) {
+                throw new ForbiddenException("Only Admin or Manager can assign tasks");
+            }
             User assignee = userRepository.findById(taskDTO.getAssignedToId())
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Assignee user not found with id: " + taskDTO.getAssignedToId()));
+            if (assignee.getRole() != Role.DEVELOPER && assignee.getRole() != Role.TESTER) {
+                throw new BadRequestException("Tasks can only be assigned to Developer or Tester");
+            }
             existingTask.setAssignedTo(assignee);
         } else {
             existingTask.setAssignedTo(null);
