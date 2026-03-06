@@ -55,7 +55,6 @@ backend/jacoco/
 # Binary / Reference Files
 # ====================
 *.pdf
-*.png
 UI1/
 UI2/
 
