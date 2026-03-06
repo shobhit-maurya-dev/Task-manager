@@ -36,11 +36,11 @@ public class User {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 20, columnDefinition = "varchar(20) default 'DEVELOPER'")
     @Builder.Default
     private Role role = Role.DEVELOPER;
 
-    @Column(name = "role_change_count", nullable = false)
+    @Column(name = "role_change_count", nullable = false, columnDefinition = "int default 0")
     @Builder.Default
     private int roleChangeCount = 0;
 
