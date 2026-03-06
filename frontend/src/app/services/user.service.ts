@@ -22,7 +22,7 @@ export class UserService {
     return this.http.get<User[]>(`${API}/assignable`);
   }
 
-  // Self role change (max 2 times, 15-day cooldown)
+  // Self role change max 2 times, 15-day 
   changeMyRole(role: string): Observable<any> {
     return this.http.put(`${API}/me/role`, { role });
   }
