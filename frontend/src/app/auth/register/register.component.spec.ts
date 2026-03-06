@@ -43,19 +43,19 @@ describe('RegisterComponent', () => {
   });
 
   it('should show error for invalid email format', () => {
-    component.registerData = { username: 'John', email: 'bad-email', password: 'Pass1234', confirmPassword: 'Pass1234' };
+    component.registerData = { username: 'John', email: 'bad-email', password: 'Pass1234', confirmPassword: 'Pass1234', role: 'DEVELOPER' };
     component.onSubmit();
     expect(component.errorMessage).toBe('Please enter a valid email address.');
   });
 
   it('should show error when password is less than 8 chars', () => {
-    component.registerData = { username: 'John', email: 'john@test.com', password: '1234567', confirmPassword: '1234567' };
+    component.registerData = { username: 'John', email: 'john@test.com', password: '1234567', confirmPassword: '1234567', role: 'DEVELOPER' };
     component.onSubmit();
     expect(component.errorMessage).toBe('Password must be at least 8 characters long.');
   });
 
   it('should show error when passwords do not match', () => {
-    component.registerData = { username: 'John', email: 'john@test.com', password: 'Pass1234', confirmPassword: 'Pass5678' };
+    component.registerData = { username: 'John', email: 'john@test.com', password: 'Pass1234', confirmPassword: 'Pass5678', role: 'DEVELOPER' };
     component.onSubmit();
     expect(component.errorMessage).toBe('Password and Confirm Password must match.');
   });
@@ -63,20 +63,21 @@ describe('RegisterComponent', () => {
   it('should call AuthService.register with valid data', () => {
     authServiceSpy.register.and.returnValue(of({ message: 'ok' }));
 
-    component.registerData = { username: 'John', email: 'john@test.com', password: 'Pass1234', confirmPassword: 'Pass1234' };
+    component.registerData = { username: 'John', email: 'john@test.com', password: 'Pass1234', confirmPassword: 'Pass1234', role: 'DEVELOPER' };
     component.onSubmit();
 
     expect(authServiceSpy.register).toHaveBeenCalledWith({
       username: 'John',
       email: 'john@test.com',
-      password: 'Pass1234'
+      password: 'Pass1234',
+      role: 'DEVELOPER'
     });
   });
 
   it('should show success message after registration', () => {
     authServiceSpy.register.and.returnValue(of({ message: 'ok' }));
 
-    component.registerData = { username: 'John', email: 'john@test.com', password: 'Pass1234', confirmPassword: 'Pass1234' };
+    component.registerData = { username: 'John', email: 'john@test.com', password: 'Pass1234', confirmPassword: 'Pass1234', role: 'DEVELOPER' };
     component.onSubmit();
 
     expect(component.successMessage).toContain('Registration successful');
@@ -86,7 +87,7 @@ describe('RegisterComponent', () => {
   it('should show duplicate email error on 409', () => {
     authServiceSpy.register.and.returnValue(throwError(() => ({ status: 409, error: { message: 'Email already exists' } })));
 
-    component.registerData = { username: 'John', email: 'john@test.com', password: 'Pass1234', confirmPassword: 'Pass1234' };
+    component.registerData = { username: 'John', email: 'john@test.com', password: 'Pass1234', confirmPassword: 'Pass1234', role: 'DEVELOPER' };
     component.onSubmit();
 
     expect(component.errorMessage).toBe('Email already exists');
@@ -95,7 +96,7 @@ describe('RegisterComponent', () => {
   it('should show connection error on status 0', () => {
     authServiceSpy.register.and.returnValue(throwError(() => ({ status: 0 })));
 
-    component.registerData = { username: 'John', email: 'john@test.com', password: 'Pass1234', confirmPassword: 'Pass1234' };
+    component.registerData = { username: 'John', email: 'john@test.com', password: 'Pass1234', confirmPassword: 'Pass1234', role: 'DEVELOPER' };
     component.onSubmit();
 
     expect(component.errorMessage).toBe('Unable to connect to server. Please check your connection.');

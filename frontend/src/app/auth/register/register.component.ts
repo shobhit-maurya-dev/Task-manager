@@ -18,7 +18,8 @@ export class RegisterComponent {
     username: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    role: 'DEVELOPER'
   };
 
   errorMessage = '';
@@ -64,7 +65,8 @@ export class RegisterComponent {
     const request: RegisterRequest = {
       username: this.registerData.username,
       email: this.registerData.email,
-      password: this.registerData.password
+      password: this.registerData.password,
+      role: this.registerData.role
     };
 
     this.authService.register(request).subscribe({
