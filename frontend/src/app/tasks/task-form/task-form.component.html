@@ -134,8 +134,8 @@
                   </div>
                 </div>
 
-                <!-- Assign To -->
-                <div class="col-12 col-md-6">
+                <!-- Assign To (only visible for Admin/Manager) -->
+                <div class="col-12 col-md-6" *ngIf="canAssign">
                   <label for="assignedTo" class="form-label fw-semibold">
                     <i class="bi bi-person-plus me-1"></i> Assign To
                   </label>
@@ -145,7 +145,7 @@
                     name="assignedTo"
                     [(ngModel)]="task.assignedToId">
                     <option [ngValue]="null">— Unassigned —</option>
-                    <option *ngFor="let user of users" [ngValue]="user.id">{{ user.username }} · {{ user.email }}</option>
+                    <option *ngFor="let user of users" [ngValue]="user.id">{{ user.username }} · {{ user.email }} ({{ user.role }})</option>
                   </select>
                   <!-- Avatar preview for selected assignee -->
                   <div class="mt-2" *ngIf="task.assignedToId">

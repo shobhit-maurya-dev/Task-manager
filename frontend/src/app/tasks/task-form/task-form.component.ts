@@ -5,6 +5,7 @@ import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { TaskService } from '../../services/task.service';
 import { ToastService } from '../../services/toast.service';
 import { UserService } from '../../services/user.service';
+import { AuthService } from '../../services/auth.service';
 import { Task, TaskStatus, TaskPriority } from '../../models/task.model';
 import { User } from '../../models/user.model';
 import { CommentsComponent } from '../../comments/comments.component';
@@ -33,6 +34,7 @@ export class TaskFormComponent implements OnInit {
   errorMessage = '';
   pageTitle = 'Create New Task';
   users: User[] = [];
+  canAssign = false; // Only true for Admin/Manager
 
   statusOptions = [
     { label: 'To-Do', value: TaskStatus.PENDING },
@@ -51,11 +53,15 @@ export class TaskFormComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private toastService: ToastService,
-    private userService: UserService
+    private userService: UserService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
-    this.loadUsers();
+    this.canAssign = this.authService.isAdminOrManager();
+    if (this.canAssign) {
+      this.loadUsers();
+    }
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.isEditMode = true;
@@ -146,7 +152,7 @@ export class TaskFormComponent implements OnInit {
   }
 
   loadUsers(): void {
-    this.userService.getAllUsers().subscribe({
+    this.userService.getAssignableUsers().subscribe({
       next: (users) => this.users = users,
       error: () => {} // Non-critical
     });

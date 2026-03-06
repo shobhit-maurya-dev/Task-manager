@@ -6,12 +6,14 @@ import { of, throwError } from 'rxjs';
 import { DashboardComponent } from './dashboard.component';
 import { TaskService } from '../../services/task.service';
 import { AuthService } from '../../services/auth.service';
+import { UserService } from '../../services/user.service';
 import { Task, TaskStatus, TaskPriority } from '../../models/task.model';
 
 describe('DashboardComponent', () => {
   let component: DashboardComponent;
   let fixture: ComponentFixture<DashboardComponent>;
   let taskServiceSpy: jasmine.SpyObj<TaskService>;
+  let userServiceSpy: jasmine.SpyObj<UserService>;
   let authServiceSpy: jasmine.SpyObj<AuthService>;
 
   const mockTasks: Task[] = [
@@ -27,16 +29,21 @@ describe('DashboardComponent', () => {
     taskServiceSpy.updateTask.and.returnValue(of({ ...mockTasks[0] }));
     taskServiceSpy.deleteTask.and.returnValue(of(undefined));
 
-    authServiceSpy = jasmine.createSpyObj('AuthService', ['getCurrentUser'], {
+    userServiceSpy = jasmine.createSpyObj('UserService', ['getAssignableUsers']);
+    userServiceSpy.getAssignableUsers.and.returnValue(of([]));
+
+    authServiceSpy = jasmine.createSpyObj('AuthService', ['getCurrentUser', 'isAdminOrManager'], {
       currentUser$: of({ username: 'TestUser', email: 'test@test.com' }),
       isLoggedIn$: of(true)
     });
+    authServiceSpy.isAdminOrManager.and.returnValue(false);
 
     await TestBed.configureTestingModule({
       imports: [DashboardComponent, HttpClientTestingModule, RouterTestingModule, FormsModule],
       providers: [
         { provide: TaskService, useValue: taskServiceSpy },
-        { provide: AuthService, useValue: authServiceSpy }
+        { provide: AuthService, useValue: authServiceSpy },
+        { provide: UserService, useValue: userServiceSpy }
       ]
     }).compileComponents();
 

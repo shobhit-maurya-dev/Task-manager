@@ -40,6 +40,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   // Users for assignment
   users: User[] = [];
+  canAssign = false; // Only true for Admin/Manager
 
   // Comments toggle per task
   expandedCommentTaskId: number | null = null;
@@ -103,8 +104,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.currentUserId = user?.id || null;
       })
     );
+    this.canAssign = this.authService.isAdminOrManager();
     this.loadTasks();
-    this.loadUsers();
+    if (this.canAssign) {
+      this.loadUsers();
+    }
   }
 
   ngOnDestroy(): void {
@@ -130,7 +134,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   loadUsers(): void {
-    this.userService.getAllUsers().subscribe({
+    this.userService.getAssignableUsers().subscribe({
       next: (users) => this.users = users,
       error: () => {} // Non-critical, fail silently
     });

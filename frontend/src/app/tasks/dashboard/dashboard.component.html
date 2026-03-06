@@ -395,11 +395,11 @@
                 <span class="badge rounded-pill tf-priority-low" style="font-size:0.6rem;opacity:0.5;" [style.opacity]="newTask.priority === 'LOW' ? '1' : '0.4'">LOW</span>
               </div>
             </div>
-            <div class="col-6">
+            <div class="col-6" *ngIf="canAssign">
               <label class="form-label fw-semibold text-uppercase small" style="color:var(--tf-text-muted); letter-spacing:0.05em;">Assign To</label>
               <select class="form-select" [(ngModel)]="newTask.assignedToId" name="modalAssignee">
                 <option [ngValue]="null">— Unassigned —</option>
-                <option *ngFor="let user of users" [ngValue]="user.id">{{ user.username }} · {{ user.email }}</option>
+                <option *ngFor="let user of users" [ngValue]="user.id">{{ user.username }} · {{ user.email }} ({{ user.role }})</option>
               </select>
               <!-- Avatar preview for selected assignee -->
               <div class="mt-2" *ngIf="newTask.assignedToId">
@@ -478,11 +478,11 @@
                 <span class="badge rounded-pill tf-priority-low" style="font-size:0.55rem;" [style.opacity]="editTask.priority === 'LOW' ? '1' : '0.4'">LOW</span>
               </div>
             </div>
-            <div class="col-6">
+            <div class="col-6" *ngIf="canAssign">
               <label class="form-label fw-semibold text-uppercase small" style="color:var(--tf-text-muted);letter-spacing:0.05em;">Assign To</label>
               <select class="form-select form-select-sm" [(ngModel)]="editTask.assignedToId" name="editAssignee">
                 <option [ngValue]="null">— Unassigned —</option>
-                <option *ngFor="let user of users" [ngValue]="user.id">{{ user.username }} · {{ user.email }}</option>
+                <option *ngFor="let user of users" [ngValue]="user.id">{{ user.username }} · {{ user.email }} ({{ user.role }})</option>
               </select>
               <div class="mt-2" *ngIf="editTask.assignedToId">
                 <span class="d-inline-flex align-items-center justify-content-center rounded-circle text-white fw-bold"
