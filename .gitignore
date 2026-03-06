@@ -70,3 +70,5 @@ frontend/README.md
 backend/GUIDE.md
 DOCKER.md
 backend/docker-compose.yml
+.vercel
+.env*.local
