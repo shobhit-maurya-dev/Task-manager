@@ -11,6 +11,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 public class AdminSeeder implements CommandLineRunner {
 
@@ -30,7 +32,8 @@ public class AdminSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (userRepository.findByEmail(ADMIN_EMAIL).isEmpty()) {
+        Optional<User> existing = userRepository.findByEmail(ADMIN_EMAIL);
+        if (existing.isEmpty()) {
             User admin = User.builder()
                     .username(ADMIN_USERNAME)
                     .email(ADMIN_EMAIL)
@@ -41,7 +44,12 @@ public class AdminSeeder implements CommandLineRunner {
             userRepository.save(admin);
             logger.info("Default ADMIN account created: {}", ADMIN_EMAIL);
         } else {
-            logger.info("ADMIN account already exists: {}", ADMIN_EMAIL);
+            // Always sync password from env variable
+            User admin = existing.get();
+            admin.setPassword(passwordEncoder.encode(adminPassword));
+            admin.setRole(Role.ADMIN);
+            userRepository.save(admin);
+            logger.info("ADMIN password synced from env variable: {}", ADMIN_EMAIL);
         }
     }
 }
