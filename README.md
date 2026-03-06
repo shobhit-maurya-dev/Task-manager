@@ -1,6 +1,6 @@
 # TaskFlow
 
- TaskFlow app(Full-stack Web Application). Angular 17 frontend, Spring Boot 3 backend, PostgreSQL database.
+TaskFlow app(Full-stack Web Application). Angular 17 frontend, Spring Boot 3 backend, PostgreSQL database.
 
 ## Stack
 
@@ -147,9 +147,3 @@ mvn test
 
 Frontend tests cover auth service, task service, login/register/dashboard components.
 Backend tests cover auth endpoints, task CRUD, comments, assignment, priority, analytics, activity feed, due date alerts. Uses H2 in-memory DB for isolated test runs.
-
-## Notes
-
-- JWT secret and DB password should be moved to env variables before deploying to production
-- `ddl-auto=update` is fine for dev — switch to `validate` or `none` in prod
-- Frontend proxy only works with `ng serve` — for prod builds, configure your web server to reverse proxy `/api` calls

@@ -5,7 +5,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://taskflow-backend-XXXX.onrender.com/api/:path*"
+      "destination": "https://taskflow-backend-9o23.onrender.com/api/:path*"
     }
   ],
   "routes": [
