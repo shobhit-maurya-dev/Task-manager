@@ -29,23 +29,34 @@ public class JwtTokenProvider {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-//  Generate JWT token from Authentication object
+//  Generate JWT token from Authentication object (kept for backward compat)
     public String generateToken(Authentication authentication) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        return generateTokenFromUsername(userDetails.getUsername());
+        // Extract role from authorities
+        String role = userDetails.getAuthorities().stream()
+                .findFirst()
+                .map(a -> a.getAuthority().replace("ROLE_", ""))
+                .orElse("DEVELOPER");
+        return generateTokenFromUsername(userDetails.getUsername(), role);
     }
 
-// Generate JWT token from username string 
-    public String generateTokenFromUsername(String username) {
+// Generate JWT token from username + role
+    public String generateTokenFromUsername(String username, String role) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
 
         return Jwts.builder()
                 .subject(username)
+                .claim("role", role)
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(getSigningKey())
                 .compact();
+    }
+
+    // Backward-compat overload (defaults to DEVELOPER)
+    public String generateTokenFromUsername(String username) {
+        return generateTokenFromUsername(username, "DEVELOPER");
     }
 
 // Extract username from JWT 
@@ -56,6 +67,16 @@ public class JwtTokenProvider {
                 .parseSignedClaims(token)
                 .getPayload()
                 .getSubject();
+    }
+
+// Extract role from JWT
+    public String getRoleFromToken(String token) {
+        return Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("role", String.class);
     }
 
 // Validate a JWT token 
