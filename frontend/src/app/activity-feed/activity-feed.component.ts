@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivityService } from '../services/activity.service';
 import { ToastService } from '../services/toast.service';
@@ -11,17 +11,25 @@ import { RelativeTimePipe } from '../pipes/relative-time.pipe';
   imports: [CommonModule, RelativeTimePipe],
   templateUrl: './activity-feed.component.html'
 })
-export class ActivityFeedComponent implements OnInit {
+export class ActivityFeedComponent implements OnInit, OnDestroy {
   activities: ActivityLog[] = [];
   isLoading = false;
+  private ticker: any;
 
   constructor(
     private activityService: ActivityService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.loadActivities();
+    // Tick every 30s to force relativeTime pipe re-evaluation
+    this.ticker = setInterval(() => { this.cdr.markForCheck(); }, 30_000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.ticker) clearInterval(this.ticker);
   }
 
   loadActivities(): void {
@@ -57,27 +65,32 @@ export class ActivityFeedComponent implements OnInit {
 
   getActionCircleClass(code?: string): string {
     const map: Record<string, string> = {
-      'COMMENT_ADDED': 'tf-circle-blue',
-      'TASK_STATUS_CHANGED': 'tf-circle-amber',
-      'TASK_ASSIGNED': 'tf-circle-purple',
-      'TASK_CREATED': 'tf-circle-green',
-      'PRIORITY_CHANGED': 'tf-circle-red',
-      'TASK_DELETED': 'tf-circle-grey',
-      'TASK_UPDATED': 'tf-circle-blue'
+      'COMMENT_ADDED': 'bg-blue-500/10 border-blue-500/20 text-blue-600',
+      'TASK_STATUS_CHANGED': 'bg-amber-500/10 border-amber-500/20 text-amber-600',
+      'TASK_ASSIGNED': 'bg-purple-500/10 border-purple-500/20 text-purple-600',
+      'TASK_CREATED': 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600',
+      'PRIORITY_CHANGED': 'bg-red-500/10 border-red-500/20 text-red-600',
+      'TASK_DELETED': 'bg-slate-500/10 border-slate-500/20 text-slate-600',
+      'TASK_UPDATED': 'bg-blue-500/10 border-blue-500/20 text-blue-600'
     };
-    return map[code || ''] || 'tf-circle-grey';
+    return map[code || ''] || 'bg-slate-500/10 border-slate-500/20 text-slate-600';
   }
 
   getActionColor(code?: string): string {
     const map: Record<string, string> = {
-      'TASK_CREATED': 'text-success',
-      'TASK_STATUS_CHANGED': 'text-warning',
-      'TASK_ASSIGNED': 'text-info',
-      'COMMENT_ADDED': 'text-primary',
-      'TASK_DELETED': 'text-secondary',
-      'TASK_UPDATED': 'text-primary',
-      'PRIORITY_CHANGED': 'text-danger'
+      'TASK_CREATED': 'text-emerald-600',
+      'TASK_STATUS_CHANGED': 'text-amber-600',
+      'TASK_ASSIGNED': 'text-purple-600',
+      'COMMENT_ADDED': 'text-blue-600',
+      'TASK_DELETED': 'text-slate-600',
+      'TASK_UPDATED': 'text-blue-600',
+      'PRIORITY_CHANGED': 'text-red-600'
     };
-    return map[code || ''] || 'text-muted';
+    return map[code || ''] || 'text-slate-400';
+  }
+
+  formatActionCode(code: string | undefined): string {
+    if (!code) return 'ACTIVITY';
+    return code.replace(/_/g, ' ');
   }
 }
