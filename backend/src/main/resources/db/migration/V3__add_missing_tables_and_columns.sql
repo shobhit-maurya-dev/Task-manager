@@ -10,20 +10,22 @@ ALTER TABLE IF EXISTS subtasks
 
 DO $$
 BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM pg_constraint WHERE conname = 'fk_subtask_assigned_to_user'
-    ) THEN
-        ALTER TABLE subtasks
-            ADD CONSTRAINT fk_subtask_assigned_to_user
-            FOREIGN KEY (assigned_to_id) REFERENCES users(id) ON DELETE SET NULL;
-    END IF;
+    IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'subtasks') THEN
+        IF NOT EXISTS (
+            SELECT 1 FROM pg_constraint WHERE conname = 'fk_subtask_assigned_to_user'
+        ) THEN
+            ALTER TABLE subtasks
+                ADD CONSTRAINT fk_subtask_assigned_to_user
+                FOREIGN KEY (assigned_to_id) REFERENCES users(id) ON DELETE SET NULL;
+        END IF;
 
-    IF NOT EXISTS (
-        SELECT 1 FROM pg_constraint WHERE conname = 'fk_subtask_created_by_user'
-    ) THEN
-        ALTER TABLE subtasks
-            ADD CONSTRAINT fk_subtask_created_by_user
-            FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE;
+        IF NOT EXISTS (
+            SELECT 1 FROM pg_constraint WHERE conname = 'fk_subtask_created_by_user'
+        ) THEN
+            ALTER TABLE subtasks
+                ADD CONSTRAINT fk_subtask_created_by_user
+                FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE;
+        END IF;
     END IF;
 END
 $$;
