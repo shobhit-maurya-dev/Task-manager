@@ -6,17 +6,8 @@ services:
     dockerContext: ./backend
     envVars:
       - key: DATABASE_URL
-        fromDatabase:
-          name: taskflow-db
-          property: connectionURI
       - key: DATABASE_USERNAME
-        fromDatabase:
-          name: taskflow-db
-          property: user
       - key: DATABASE_PASSWORD
-        fromDatabase:
-          name: taskflow-db
-          property: password
       - key: JWT_SECRET
         generateValue: true
       - key: CORS_ORIGINS
@@ -25,8 +16,3 @@ services:
         value: update
       - key: LOG_LEVEL
         value: INFO
-
-databases:
-  - name: taskflow-db
-    databaseName: taskflow
-    plan: free
