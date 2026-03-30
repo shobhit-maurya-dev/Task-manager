@@ -3,3 +3,4 @@
   <router-outlet></router-outlet>
 </main>
 <app-toast></app-toast>
+<app-chatbot *ngIf="isLoggedIn$ | async"></app-chatbot>
