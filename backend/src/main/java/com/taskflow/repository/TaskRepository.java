@@ -28,7 +28,13 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     List<Task> findByUserIdAndStatusAndPriorityOrderByCreatedAtDesc(
             Long userId, TaskStatus status, TaskPriority priority);
 
-    List<Task> findByAssignedToIdOrderByCreatedAtDesc(Long assignedToId);
+    List<Task> findByAssigneesIdOrderByCreatedAtDesc(Long userId);
+
+    // Tasks associated with a team
+    List<Task> findByTeamIdOrderByCreatedAtDesc(Long teamId);
+
+    // Tasks for teams - used for team visibility
+    List<Task> findByTeamIdInOrderByCreatedAtDesc(List<Long> teamIds);
 
     // Analytics: count by status
     long countByUserIdAndStatus(Long userId, TaskStatus status);
