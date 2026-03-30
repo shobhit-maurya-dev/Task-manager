@@ -1,0 +1,42 @@
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Projects
+.classpath
+.project
+.settings/
+.cache/
+.factorypath
+.idea/
+*.iml
+*.iws
+
+# Logs
+*.log
+logs/
+boot*.log
+build*.log
+error.log
+hs_err_pid*
+replay_pid*
+startup_output*
+
+# System
+.DS_Store
+Thumbs.db
+
+# Misc
+temp/
+tmp/
+downloaded.bin
+test-upload.txt
+build_log.txt
