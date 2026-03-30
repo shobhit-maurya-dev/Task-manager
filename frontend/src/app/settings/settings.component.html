@@ -1,0 +1,499 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 transition-colors duration-300">
+  <div class="flex flex-col lg:flex-row gap-8">
+    
+    <!-- Sidebar -->
+    <div class="w-full lg:w-72 flex-shrink-0">
+      <div class="bg-white dark:bg-[#1E293B] rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm overflow-hidden">
+        <div class="p-6">
+          <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-6 px-2">Settings</h2>
+          <nav class="space-y-1">
+            <button (click)="setTab('profile')" 
+                    [ngClass]="activeTab === 'profile' ? 'bg-blue-500/10' : 'text-slate-600 dark:text-slate-400'"
+                    [style.color]="activeTab === 'profile' ? accentColor : ''"
+                    class="w-full flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 hover:bg-slate-50 dark:hover:bg-white/5">
+
+              Profile
+            </button>
+            <button (click)="setTab('security')" 
+                    [ngClass]="activeTab === 'security' ? 'bg-blue-500/10' : 'text-slate-600 dark:text-slate-400'"
+                    [style.color]="activeTab === 'security' ? accentColor : ''"
+                    class="w-full flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 hover:bg-slate-50 dark:hover:bg-white/5">
+
+              Security
+            </button>
+            <button (click)="setTab('theme')" 
+                    [ngClass]="activeTab === 'theme' ? 'bg-blue-500/10' : 'text-slate-600 dark:text-slate-400'"
+                    [style.color]="activeTab === 'theme' ? accentColor : ''"
+                    class="w-full flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 hover:bg-slate-50 dark:hover:bg-white/5">
+
+              Theme
+            </button>
+            <button (click)="setTab('notifications')" 
+                    [ngClass]="activeTab === 'notifications' ? 'bg-blue-500/10' : 'text-slate-600 dark:text-slate-400'"
+                    [style.color]="activeTab === 'notifications' ? accentColor : ''"
+                    class="w-full flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 hover:bg-slate-50 dark:hover:bg-white/5">
+
+              Notifications
+            </button>
+            <button (click)="setTab('team')" 
+                    *ngIf="isAdmin"
+                    [ngClass]="activeTab === 'team' ? 'bg-blue-500/10' : 'text-slate-600 dark:text-slate-400'"
+                    [style.color]="activeTab === 'team' ? accentColor : ''"
+                    class="w-full flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 hover:bg-slate-50 dark:hover:bg-white/5">
+              Team Settings
+            </button>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="flex-grow min-w-0">
+      <div class="bg-white dark:bg-[#1E293B] rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm overflow-hidden min-h-[600px]">
+        <div class="p-8" [ngSwitch]="activeTab">
+          
+          <!-- Profile Tab -->
+          <div *ngSwitchCase="'profile'" class="animate-in fade-in duration-300">
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">Profile Settings</h1>
+            <p class="text-slate-600 dark:text-slate-400 mb-8 font-medium">Update your name, email, avatar colour, and bio.</p>
+            
+            <div class="flex flex-col md:flex-row gap-8 mb-10 pb-10 border-b border-slate-100 dark:border-white/5">
+              <div class="flex flex-col items-center">
+                <div class="w-24 h-24 rounded-full flex items-center justify-center text-3xl font-bold text-white shadow-xl mb-4 transition-transform duration-300 hover:scale-105" 
+                     [style.backgroundColor]="avatarColor || '#3B82F6'">
+                  {{ (profile.username || 'U').charAt(0).toUpperCase() }}
+                </div>
+              </div>
+              <div class="flex-grow">
+                <p class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Avatar Preview</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Colour updates live as you pick</p>
+                <div class="flex flex-wrap gap-2">
+                  <div *ngFor="let c of avatarColors" 
+                       (click)="setAvatarColor(c)"
+                       class="w-8 h-8 rounded-full cursor-pointer transition-all duration-200 border-4"
+                       [style.backgroundColor]="c"
+                       [style.borderColor]="avatarColor === c ? 'rgba(255,255,255,0.8)' : 'transparent'"
+                       [class.shadow-lg]="avatarColor === c">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <form (ngSubmit)="saveProfile()" #profileForm="ngForm" class="space-y-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                <label class="block text-[10px] font-extrabold text-slate-600 dark:text-slate-500 uppercase tracking-widest mb-1">Full Name *</label>
+                   <input type="text" [(ngModel)]="profile.username" name="username" required
+                          class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all">
+                </div>
+                <div>
+                   <label class="block text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Email Address *</label>
+                   <input type="email" [(ngModel)]="profile.email" name="email" required
+                          class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Bio (optional)</label>
+                <textarea [(ngModel)]="profile.bio" name="bio" rows="3" maxlength="200"
+                          placeholder="Tell us about yourself..."
+                          class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all resize-none"></textarea>
+                <div class="flex justify-end mt-1">
+                  <span class="text-[10px] font-medium text-slate-400">{{ (profile.bio || '').length }}/200</span>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-4 pt-4">
+                <button type="submit" [disabled]="isSaving"
+                        [style.backgroundColor]="accentColor"
+                        class="px-8 py-3 rounded-xl text-white font-bold shadow-lg shadow-blue-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100">
+                  <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
+                  Save Profile
+                </button>
+                <button type="button" (click)="loadProfile()"
+                        class="px-8 py-3 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 font-bold hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                  Discard
+                </button>
+              </div>
+            </form>
+
+            <div class="mt-12 tf-danger-zone overflow-hidden relative">
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div>
+                  <h3 class="text-lg font-bold text-red-500 mb-1">Danger Zone</h3>
+                  <p class="text-sm text-slate-600 dark:text-slate-400">Permanently delete your account and all associated data.<br>This action cannot be undone. You will be asked to confirm by typing your email.</p>
+                </div>
+                <button (click)="deleteAccount()"
+                        class="px-6 py-3 rounded-xl bg-red-500 text-white font-bold shadow-lg shadow-red-500/20 hover:bg-red-600 transition-all whitespace-nowrap">
+                  Delete My Account
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Security Tab -->
+          <div *ngSwitchCase="'security'" class="animate-in fade-in duration-300">
+             <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">Security Settings</h1>
+             <p class="text-slate-500 dark:text-slate-400 mb-8 font-medium">Manage your password and security sessions.</p>
+
+             <div class="mb-10">
+               <h2 class="text-lg font-bold text-slate-800 dark:text-slate-200 mb-4 pb-2 border-b border-slate-100 dark:border-white/5">Change Password</h2>
+               <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                 <div>
+                   <label class="block text-[10px] font-extrabold text-slate-600 dark:text-slate-500 uppercase mb-1">Current Password</label>
+                   <input type="password" [(ngModel)]="currentPassword" placeholder="••••••••"
+                          class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/50 outline-none focus:border-blue-500 transition-all">
+                 </div>
+                 <div>
+                   <label class="block text-[10px] font-extrabold text-slate-600 dark:text-slate-500 uppercase mb-1">New Password</label>
+                   <input type="password" [(ngModel)]="newPassword" (input)="onNewPasswordInput()" placeholder="min 8 characters"
+                          class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/50 outline-none focus:border-blue-500 transition-all">
+                 </div>
+                 <div>
+                   <label class="block text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase mb-1">Confirm New</label>
+                   <input type="password" [(ngModel)]="confirmNewPassword" placeholder="repeat new password"
+                          class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/50 outline-none focus:border-blue-500 transition-all">
+                 </div>
+               </div>
+               
+               <div class="flex items-center gap-4 mb-8">
+                 <div class="flex grow gap-1">
+                   <div class="tf-strength-bar" [class.bg-red-500]="passwordStrengthScore > 0" [class.bg-slate-200]="passwordStrengthScore < 1" [class.dark:bg-slate-700]="passwordStrengthScore < 1"></div>
+                   <div class="tf-strength-bar" [class.bg-orange-500]="passwordStrengthScore > 1" [class.bg-slate-200]="passwordStrengthScore < 2" [class.dark:bg-slate-700]="passwordStrengthScore < 2"></div>
+                   <div class="tf-strength-bar" [class.bg-green-500]="passwordStrengthScore > 2" [class.bg-slate-200]="passwordStrengthScore < 3" [class.dark:bg-slate-700]="passwordStrengthScore < 3"></div>
+                   <div class="tf-strength-bar" [class.bg-green-600]="passwordStrengthScore > 3" [class.bg-slate-200]="passwordStrengthScore < 4" [class.dark:bg-slate-700]="passwordStrengthScore < 4"></div>
+                 </div>
+                 <span class="text-xs font-bold" [style.color]="passwordStrengthScore < 2 ? '#ef4444' : (passwordStrengthScore < 3 ? '#f59e0b' : '#22c55e')">
+                   Password strength: {{ passwordStrengthLabel }}
+                 </span>
+               </div>
+               
+               <button (click)="updatePassword()" [style.backgroundColor]="accentColor"
+                       class="px-8 py-3 rounded-xl text-white font-bold shadow-lg shadow-blue-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                 Update Password
+               </button>
+             </div>
+
+             <div>
+                <h2 class="text-lg font-bold text-slate-800 dark:text-slate-200 mb-1">Active Sessions</h2>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Your account is currently signed in on these sessions.</p>
+                
+                <div class="space-y-3">
+                  <div *ngFor="let s of activeSessions" 
+                       class="flex items-center justify-between p-4 rounded-2xl border border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-white/5">
+                    <div class="flex items-center gap-4">
+                      <div class="w-10 h-10 rounded-full flex items-center justify-center bg-white dark:bg-slate-800 shadow-sm">
+                        <i class="bi" [class.bi-laptop]="s.client.includes('Chrome') || s.client.includes('Firefox')" 
+                           [class.bi-phone]="s.client.includes('Mobile') || s.client.includes('iPhone')"
+                           [class.text-blue-500]="s.isCurrent"></i>
+                      </div>
+                      <div>
+                        <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100">
+                          {{ s.isCurrent ? 'Current Session (This Device)' : s.label }}
+                        </h4>
+                        <p class="text-[11px] text-slate-500">{{ s.client }} • {{ s.location }} • Last active: {{ s.lastActive }}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <span *ngIf="s.isCurrent" class="px-3 py-1 rounded-full border border-green-500/30 bg-green-500/10 text-green-600 dark:text-green-400 text-[10px] font-bold uppercase tracking-wider">Active</span>
+                      <button *ngIf="!s.isCurrent" (click)="revokeSession(s.id)"
+                              class="px-4 py-1.5 rounded-lg bg-red-500 text-white text-[11px] font-bold hover:bg-red-600 transition-all shadow-sm">
+                        Revoke
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mt-8 flex justify-end">
+                   <button (click)="revokeAllOthers()" 
+                           class="px-6 py-2 rounded-xl bg-red-500 text-white text-xs font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-500/20">
+                     Revoke All Others
+                   </button>
+                </div>
+             </div>
+          </div>
+
+          <!-- Theme Tab (MODERNIZED) -->
+          <div *ngSwitchCase="'theme'" class="animate-in fade-in duration-300">
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">Settings — Theme</h1>
+            <p class="text-slate-500 dark:text-slate-400 mb-8 font-medium">Choose how TaskFlow looks. System follows your OS.</p>
+            
+            <div class="mb-4">
+               <h2 class="text-lg font-bold text-slate-800 dark:text-slate-200 mb-1">Theme</h2>
+               <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Choose how TaskFlow looks. System follows your OS.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <!-- Light Theme Card -->
+              <div (click)="setTheme('light')" 
+                   class="group relative cursor-pointer rounded-2xl border-2 p-4 transition-all duration-200"
+                   [ngClass]="selectedTheme === 'light' ? 'bg-blue-500/5' : 'border-slate-200 dark:border-white/10'"
+                   [style.borderColor]="selectedTheme === 'light' ? accentColor : ''">
+                
+                <div class="tf-theme-card-preview light mb-4">
+                  <div class="inner-bars">
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                  </div>
+                </div>
+                
+                <div class="flex items-start justify-between">
+                  <div>
+                    <h3 class="font-bold text-slate-900 dark:text-slate-100">Light</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">Bright and clear. Good for daytime use.</p>
+                  </div>
+                  <div *ngIf="selectedTheme === 'light'" class="flex h-5 w-5 items-center justify-center rounded-full text-white shadow-lg" [style.background]="accentColor">
+                    <i class="bi bi-check-lg text-xs"></i>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Dark Theme Card -->
+              <div (click)="setTheme('dark')" 
+                   class="group relative cursor-pointer rounded-2xl border-2 p-4 transition-all duration-200"
+                   [ngClass]="selectedTheme === 'dark' ? 'bg-blue-500/5' : 'border-slate-200 dark:border-white/10'"
+                   [style.borderColor]="selectedTheme === 'dark' ? accentColor : ''">
+                
+                <div class="tf-theme-card-preview dark mb-4 border-slate-700">
+                  <div class="inner-bars">
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                  </div>
+                </div>
+                
+                <div class="flex items-start justify-between">
+                  <div>
+                    <h3 class="font-bold text-slate-900 dark:text-slate-100">Dark</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">Easy on the eyes. Good for low-light.</p>
+                  </div>
+                  <div *ngIf="selectedTheme === 'dark'" class="flex h-5 w-5 items-center justify-center rounded-full text-white shadow-lg" [style.background]="accentColor">
+                    <i class="bi bi-check-lg text-xs"></i>
+                  </div>
+                </div>
+              </div>
+
+              <!-- System Theme Card -->
+              <div (click)="setTheme('system')" 
+                   class="group relative cursor-pointer rounded-2xl border-2 p-4 transition-all duration-200"
+                   [ngClass]="selectedTheme === 'system' ? 'bg-blue-500/5' : 'border-slate-200 dark:border-white/10'"
+                   [style.borderColor]="selectedTheme === 'system' ? accentColor : ''">
+                
+                <div class="tf-theme-card-preview system mb-4">
+                  <div class="inner-bars">
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                  </div>
+                </div>
+                
+                <div class="flex items-start justify-between">
+                  <div>
+                    <h3 class="font-bold text-slate-900 dark:text-slate-100">System</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">Follows your OS appearance setting.</p>
+                  </div>
+                  <div *ngIf="selectedTheme === 'system'" class="flex h-5 w-5 items-center justify-center rounded-full text-white shadow-lg" [style.background]="accentColor">
+                    <i class="bi bi-check-lg text-xs"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Accent Color Section -->
+            <div class="mt-12 animate-in slide-in-from-bottom-4 duration-500">
+               <div class="mb-4">
+                  <h2 class="text-lg font-bold text-slate-800 dark:text-slate-200 mb-1">Primary Color</h2>
+                  <p class="text-sm text-slate-500 dark:text-slate-400">Personalize TaskFlow with your favorite accent color.</p>
+               </div>
+               
+               <div class="flex items-center gap-4 py-2">
+                 <div *ngFor="let color of accentColors" 
+                      (click)="setAccentColor(color)"
+                      class="tf-accent-dot" 
+                      [class.active]="accentColor === color"
+                      [style.backgroundColor]="color">
+                 </div>
+               </div>
+            </div>
+          </div>
+
+          <!-- Notifications Tab -->
+          <div *ngSwitchCase="'notifications'" class="animate-in fade-in duration-300">
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">Notification Preferences</h1>
+            <p class="text-slate-500 dark:text-slate-400 mb-2 font-medium">Control which in-app notifications TaskFlow shows you.</p>
+            <p class="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-bold mb-8">Changes saved automatically.</p>
+
+            <div class="space-y-4 max-w-4xl">
+              <!-- Assigned to me -->
+              <div class="tf-notif-card accent-blue bg-white dark:bg-white/5 border border-slate-100 dark:border-white/5 rounded-2xl p-6 flex items-center justify-between shadow-sm">
+                <div class="flex items-center gap-4">
+                  <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
+                    <i class="bi bi-person-check-fill text-lg"></i>
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-slate-900 dark:text-slate-100">Task assigned to me</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Show a toast when someone assigns a task to me.</p>
+                    <p class="text-[10px] text-slate-400 italic">In-app toast notification only — no email or SMS.</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                   <span class="text-[10px] font-extrabold" [class.text-blue-500]="notificationPrefs.assignedToMe" [class.text-slate-400]="!notificationPrefs.assignedToMe">{{ notificationPrefs.assignedToMe ? 'ON' : 'OFF' }}</span>
+                   <label class="tf-switch">
+                      <input type="checkbox" [(ngModel)]="notificationPrefs.assignedToMe" (change)="saveNotificationPreferences()">
+                      <span class="tf-slider"></span>
+                   </label>
+                </div>
+              </div>
+
+              <!-- Comment on my task -->
+              <div class="tf-notif-card accent-green bg-white dark:bg-white/5 border border-slate-100 dark:border-white/5 rounded-2xl p-6 flex items-center justify-between shadow-sm">
+                <div class="flex items-center gap-4">
+                  <div class="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center text-green-500">
+                    <i class="bi bi-chat-dots-fill text-lg"></i>
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-slate-900 dark:text-slate-100">Comment on my task</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Show a toast when someone comments on a task I own.</p>
+                    <p class="text-[10px] text-slate-400 italic">In-app toast notification only — no email or SMS.</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] font-extrabold" [class.text-green-500]="notificationPrefs.commentOnMyTask" [class.text-slate-400]="!notificationPrefs.commentOnMyTask">{{ notificationPrefs.commentOnMyTask ? 'ON' : 'OFF' }}</span>
+                  <label class="tf-switch">
+                     <input type="checkbox" [(ngModel)]="notificationPrefs.commentOnMyTask" (change)="saveNotificationPreferences()">
+                     <span class="tf-slider" [style.backgroundColor]=""></span>
+                  </label>
+               </div>
+              </div>
+
+              <!-- Subtask completed -->
+              <div class="tf-notif-card accent-purple bg-white dark:bg-white/5 border border-slate-100 dark:border-white/5 rounded-2xl p-6 flex items-center justify-between shadow-sm">
+                <div class="flex items-center gap-4">
+                  <div class="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500">
+                    <i class="bi bi-check-square-fill text-lg"></i>
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-slate-900 dark:text-slate-100">Subtask completed</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Notify when a subtask on my task is marked done.</p>
+                    <p class="text-[10px] text-slate-400 italic">In-app toast notification only — no email or SMS.</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] font-extrabold" [class.text-purple-500]="notificationPrefs.subtaskCompleted" [class.text-slate-400]="!notificationPrefs.subtaskCompleted">{{ notificationPrefs.subtaskCompleted ? 'ON' : 'OFF' }}</span>
+                  <label class="tf-switch">
+                     <input type="checkbox" [(ngModel)]="notificationPrefs.subtaskCompleted" (change)="saveNotificationPreferences()">
+                     <span class="tf-slider"></span>
+                  </label>
+               </div>
+              </div>
+
+              <!-- Task overdue -->
+              <div class="tf-notif-card accent-red bg-white dark:bg-white/5 border border-slate-100 dark:border-white/5 rounded-2xl p-6 flex items-center justify-between shadow-sm">
+                <div class="flex items-center gap-4">
+                  <div class="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500">
+                    <i class="bi bi-clock-fill text-lg"></i>
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-slate-900 dark:text-slate-100">Task overdue</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Show a red banner when any of my tasks pass their due date.</p>
+                    <p class="text-[10px] text-slate-400 italic">In-app toast notification only — no email or SMS.</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] font-extrabold" [class.text-red-500]="notificationPrefs.taskOverdue" [class.text-slate-400]="!notificationPrefs.taskOverdue">{{ notificationPrefs.taskOverdue ? 'ON' : 'OFF' }}</span>
+                  <label class="tf-switch">
+                     <input type="checkbox" [(ngModel)]="notificationPrefs.taskOverdue" (change)="saveNotificationPreferences()">
+                     <span class="tf-slider"></span>
+                  </label>
+               </div>
+              </div>
+
+              <!-- Team updates -->
+              <div class="tf-notif-card accent-orange bg-white dark:bg-white/5 border border-slate-100 dark:border-white/5 rounded-2xl p-6 flex items-center justify-between shadow-sm">
+                <div class="flex items-center gap-4">
+                  <div class="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500">
+                    <i class="bi bi-people-fill text-lg"></i>
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-slate-900 dark:text-slate-100">Team updates</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Notify when I am added to or removed from a team.</p>
+                    <p class="text-[10px] text-slate-400 italic">In-app toast notification only — no email or SMS.</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] font-extrabold" [class.text-orange-500]="notificationPrefs.teamUpdates" [class.text-slate-400]="!notificationPrefs.teamUpdates">{{ notificationPrefs.teamUpdates ? 'ON' : 'OFF' }}</span>
+                  <label class="tf-switch">
+                     <input type="checkbox" [(ngModel)]="notificationPrefs.teamUpdates" (change)="saveNotificationPreferences()">
+                     <span class="tf-slider"></span>
+                  </label>
+               </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div *ngSwitchCase="'team'" class="animate-in fade-in duration-300">
+             <div class="p-3 mb-6 bg-purple-500/5 border border-purple-500/20 rounded-xl text-purple-600 dark:text-purple-400 text-xs font-bold text-center italic">
+               Visible to Admin role only.
+             </div>
+
+             <div class="flex items-center justify-between mb-8">
+               <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">Team Settings — My Teams</h1>
+               <button (click)="createTeam()" 
+                       class="px-6 py-2.5 rounded-xl bg-[#0F5A55] text-white text-sm font-bold shadow-lg shadow-teal-900/20 hover:scale-[1.02] flex items-center gap-2 transition-all">
+                 <i class="bi bi-plus-lg"></i>
+                 Create Team
+               </button>
+             </div>
+
+             <div class="space-y-8">
+               <div *ngFor="let team of teams" class="bg-white dark:bg-[#1E293B] rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md">
+                 <!-- Team Header -->
+                 <div class="px-6 py-4 bg-slate-900/5 dark:bg-black/20 border-b border-slate-200 dark:border-white/5 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <h3 class="font-bold text-slate-900 dark:text-slate-100">{{ team.name }}</h3>
+                      <span class="text-[10px] text-slate-500 font-medium">({{ team.members?.length || 0 }} members • {{ team.activeTaskCount || 0 }} active tasks)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                       <button class="px-5 py-1.5 rounded-lg bg-orange-500 text-white text-[11px] font-bold shadow-lg shadow-orange-500/20 hover:bg-orange-600">Edit</button>
+                       <button (click)="removeTeam(team)" class="px-5 py-1.5 rounded-lg bg-red-500 text-white text-[11px] font-bold shadow-lg shadow-red-500/20 hover:bg-red-700">Delete</button>
+                    </div>
+                 </div>
+                 
+                 <!-- Team Content -->
+                 <div class="p-6">
+                    <div class="space-y-4 mb-6">
+                      <div *ngFor="let member of team.members" class="flex items-center justify-between py-2 border-b border-slate-50 dark:border-white/5 last:border-0">
+                         <div class="flex items-center gap-3">
+                           <span class="text-sm font-bold text-slate-800 dark:text-slate-200">{{ member.username }}</span>
+                           <span class="px-2.5 py-0.5 rounded-full border border-blue-500/30 text-blue-500 text-[9px] font-extrabold uppercase tracking-widest">{{ member.role || 'MEMBER' }}</span>
+                         </div>
+                         <button (click)="removeMember(team.id, member.userId)" class="text-slate-400 hover:text-red-500 transition-colors">
+                           <i class="bi bi-x-circle"></i>
+                         </button>
+                      </div>
+                    </div>
+
+                    <!-- Invite Bar -->
+                    <div class="flex items-center gap-2">
+                       <div class="grow relative">
+                          <input type="text" placeholder="Search to invite a member..." 
+                                 class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 text-sm outline-none focus:border-blue-500 transition-all">
+                       </div>
+                       <button class="px-8 py-2.5 rounded-xl bg-blue-500 text-white text-sm font-bold shadow-lg shadow-blue-500/20 hover:bg-blue-600 transition-all">Invite</button>
+                    </div>
+                 </div>
+               </div>
+
+               <!-- Empty State -->
+               <div *ngIf="!teams.length" class="p-12 text-center bg-slate-50 dark:bg-white/5 rounded-2xl border border-dashed border-slate-300 dark:border-white/10">
+                  <i class="bi bi-people text-4xl text-slate-300 mb-4"></i>
+                  <h3 class="font-bold text-slate-400">No teams found</h3>
+                  <p class="text-sm text-slate-500">Create your first team to start collaborating.</p>
+               </div>
+             </div>
+          </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+</div>
