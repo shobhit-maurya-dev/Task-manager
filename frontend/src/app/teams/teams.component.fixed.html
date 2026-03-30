@@ -1,0 +1,142 @@
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h2 class="mb-0 fw-bold">My Teams</h2>
+    <p class="text-muted mb-0">Manage or view the teams you belong to.</p>
+  </div>
+  <button class="btn btn-primary" *appHasRole="['ADMIN','MANAGER']" routerLink="/teams/new">
+    <i class="bi bi-plus-lg"></i> Create Team
+  </button>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-12 col-md-4">
+    <div class="card team-summary-card bg-light shadow-sm">
+      <div class="card-body d-flex justify-content-between align-items-center">
+        <div>
+          <small class="text-muted">My Teams</small>
+          <div class="h4 mb-0 text-primary">{{ totalTeams }}</div>
+        </div>
+        <i class="bi bi-people-fill fs-3 text-primary"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-4">
+    <div class="card team-summary-card bg-light shadow-sm">
+      <div class="card-body d-flex justify-content-between align-items-center">
+        <div>
+          <small class="text-muted">Total Members</small>
+          <div class="h4 mb-0 text-success">{{ totalMembers }}</div>
+        </div>
+        <i class="bi bi-people fs-3 text-success"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-4">
+    <div class="card team-summary-card bg-light shadow-sm">
+      <div class="card-body d-flex justify-content-between align-items-center">
+        <div>
+          <small class="text-muted">Active Tasks</small>
+          <div class="h4 mb-0 text-warning">{{ totalActiveTasks }}</div>
+        </div>
+        <i class="bi bi-list-task fs-3 text-warning"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="isLoading" class="d-flex justify-content-center align-items-center py-5">
+  <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+</div>
+
+<div *ngIf="!isLoading && errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+
+<div *ngIf="!isLoading && !errorMessage && teams.length === 0" class="alert alert-info">
+  No teams available. Please create a new team or contact your administrator.
+</div>
+
+<div class="row g-3" *ngIf="!isLoading && !errorMessage && teams.length > 0">
+  <div class="col-12 col-lg-4">
+    <div class="row row-cols-1 g-2">
+      <div class="col" *ngFor="let team of teams">
+        <div class="card compact-team-card shadow-sm" [class.selected]="selectedTeam?.id === team.id" (click)="selectTeam(team)">
+          <div class="card-body p-2">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="mb-1 text-dark">{{ team.name }}</h6>
+                <small class="text-muted">{{ team.memberCount ?? 0 }} members</small>
+              </div>
+              <span class="badge px-2 py-1" [ngClass]="{ 'bg-warning text-dark': isTaskCountPositive(team.activeTaskCount), 'bg-secondary': !isTaskCountPositive(team.activeTaskCount) }">
+                {{ taskCountDisplay(team.activeTaskCount) }}
+              </span>
+            </div>
+            <small class="text-muted">Manager: {{ team.managerName || '—' }}</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-8">
+    <div class="card team-detail-card shadow-sm">
+      <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <div>
+          <h5 class="mb-1">Team Detail — {{ selectedTeam?.name || 'None selected' }}</h5>
+          <small class="text-white-50">Inspect details and manage this team.</small>
+        </div>
+        <button class="btn btn-sm btn-light text-primary" *ngIf="selectedTeam" (click)="isAddingMember = true">
+          <i class="bi bi-person-plus"></i> Add Member
+        </button>
+      </div>
+
+      <div class="card-body p-3" *ngIf="selectedTeam; else selectFirstTeam">
+        <p class="text-muted mb-3">{{ selectedTeam.description || 'No team description provided.' }}</p>
+
+        <div class="form-check form-switch mb-4">
+          <input id="teamAccessSwitch" class="form-check-input" type="checkbox" [checked]="selectedTeamAccess === 'public'" (change)="onAccessToggle($event)">
+          <label class="form-check-label" for="teamAccessSwitch">Group access: <strong>{{ selectedTeamAccess | titlecase }}</strong></label>
+        </div>
+
+        <h6 class="mb-2">Members</h6>
+        <div class="table-responsive mb-3">
+          <table class="table table-sm table-hover">
+            <thead class="table-light">
+              <tr>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Email</th>
+                <th>Tasks</th>
+                <th>Joined</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let member of selectedTeam.members || []">
+                <td>{{ member.username }}</td>
+                <td><span class="badge" [ngClass]="{ 'bg-success': member.role === 'MANAGER', 'bg-info text-dark': member.role === 'MEMBER', 'bg-purple': member.role === 'QA' }">{{ member.role || 'MEMBER' }}</span></td>
+                <td>{{ member.email }}</td>
+                <td>{{ member.tasksAssigned ?? 0 }}</td>
+                <td>{{ member.joinedAt | date:'mediumDate' }}</td>
+                <td><button class="btn btn-sm btn-outline-danger" (click)="removeMember(member)">Remove</button></td>
+              </tr>
+              <tr *ngIf="!(selectedTeam.members?.length)"><td colspan="6" class="text-center text-muted">No members in this team yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-3">
+          <h6 class="mb-2">Quick team list</h6>
+          <div class="list-group">
+            <button type="button" class="list-group-item list-group-item-action" *ngFor="let t of teams" (click)="selectTeam(t)">
+              <div class="d-flex justify-content-between align-items-center">
+                <span>{{ t.name }}</span>
+                <span class="badge rounded-pill" [ngClass]="{ 'bg-warning text-dark': isTaskCountPositive(t.activeTaskCount), 'bg-secondary': !isTaskCountPositive(t.activeTaskCount) }">{{ taskCountDisplay(t.activeTaskCount) }}</span>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #selectFirstTeam><div class="p-4 text-center text-muted">Select a team from the left panel to view details.</div></ng-template>
+    </div>
+  </div>
+</div>
