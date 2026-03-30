@@ -26,7 +26,27 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@org.springframework.transaction.annotation.Transactional
 class TaskControllerTests {
+    // Static helper for use in other test classes
+    static Long createSampleTaskStatic(MockMvc mockMvc, ObjectMapper objectMapper, String token, String title) throws Exception {
+        TaskDTO task = TaskDTO.builder()
+                .title(title)
+                .status(TaskStatus.PENDING)
+                .priority(TaskPriority.MEDIUM)
+                .dueDate(LocalDate.now().plusDays(7))
+                .build();
+
+        MvcResult result = mockMvc.perform(post("/api/tasks")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(task)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        return objectMapper.readTree(
+                result.getResponse().getContentAsString()).get("id").asLong();
+    }
 
     @Autowired
     private MockMvc mockMvc;
@@ -178,6 +198,44 @@ class TaskControllerTests {
 
     @Test
     @Order(8)
+    @DisplayName("FR-TASK-02: Filter tasks by status for caretakers and assigned tasks")
+    void getTasksFilteredByStatusAssignedTask() throws Exception {
+        Long taskId = createSampleTask("Assigned Pending Task", TaskStatus.PENDING);
+
+        RegisterRequest user2Req = RegisterRequest.builder()
+                .username("Team Member")
+                .email("member@example.com")
+                .password("password123")
+                .build();
+
+        MvcResult regResult = mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(user2Req)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        String user2Token = objectMapper.readTree(regResult.getResponse().getContentAsString()).get("token").asText();
+
+        // Assign task to user2 directly in the repository so we can verify filter behavior.
+        com.taskflow.model.User user2 = userRepository.findByEmail("member@example.com").orElseThrow();
+        com.taskflow.model.Task task = taskRepository.findById(taskId).orElseThrow();
+        task.getAssignees().add(user2);
+        taskRepository.save(task);
+
+        mockMvc.perform(get("/api/tasks?status=PENDING")
+                        .header("Authorization", "Bearer " + user2Token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].title").value("Assigned Pending Task"));
+
+        mockMvc.perform(get("/api/tasks/summary")
+                        .header("Authorization", "Bearer " + user2Token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalTasks").value(1));
+    }
+
+    @Test
+    @Order(9)
     @DisplayName("FR-TASK-02: Get single task by ID")
     void getTaskById() throws Exception {
         Long taskId = createSampleTask("Specific Task", TaskStatus.PENDING);
@@ -296,7 +354,7 @@ class TaskControllerTests {
         // User 2 tries to access User 1's task → 404
         mockMvc.perform(get("/api/tasks/" + taskId)
                         .header("Authorization", "Bearer " + user2Token))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isForbidden());
 
         // User 2 sees empty task list
         mockMvc.perform(get("/api/tasks")
