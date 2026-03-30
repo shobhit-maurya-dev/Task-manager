@@ -57,6 +57,7 @@ backend/jacoco/
 *.pdf
 UI1/
 UI2/
+UI3/
 
 # ====================
 # Extra docs (not for GitHub)
