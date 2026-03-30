@@ -24,6 +24,7 @@ backend/*.war
 *.swp
 *.swo
 *~
+.continue/
 
 # ====================
 # OS
