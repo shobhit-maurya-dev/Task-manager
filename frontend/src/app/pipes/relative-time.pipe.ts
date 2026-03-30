@@ -1,33 +1,81 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
-/**
- * RelativeTimePipe — converts ISO date strings to human-readable relative time.
- * Usage: {{ dateString | relativeTime }}
- * Output: "just now", "5 minutes ago", "2 hours ago", "3 days ago", "1 week ago", etc.
- */
 @Pipe({
   name: 'relativeTime',
-  standalone: true
+  standalone: true,
+  pure: false
 })
 export class RelativeTimePipe implements PipeTransform {
-  transform(dateStr: string | undefined | null): string {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diffSec = Math.floor((now.getTime() - date.getTime()) / 1000);
+  transform(date?: string | Date | null): string {
+    if (!date) return '';
 
-    if (diffSec < 60) return 'just now';
-    const diffMin = Math.floor(diffSec / 60);
-    if (diffMin < 60) return `${diffMin} minute${diffMin > 1 ? 's' : ''} ago`;
-    const diffHr = Math.floor(diffMin / 60);
-    if (diffHr < 24) return `${diffHr} hour${diffHr > 1 ? 's' : ''} ago`;
-    const diffDay = Math.floor(diffHr / 24);
-    if (diffDay < 7) return `${diffDay} day${diffDay > 1 ? 's' : ''} ago`;
-    const diffWeek = Math.floor(diffDay / 7);
-    if (diffWeek < 4) return `${diffWeek} week${diffWeek > 1 ? 's' : ''} ago`;
-    const diffMonth = Math.floor(diffDay / 30);
-    if (diffMonth < 12) return `${diffMonth} month${diffMonth > 1 ? 's' : ''} ago`;
-    const diffYear = Math.floor(diffDay / 365);
-    return `${diffYear} year${diffYear > 1 ? 's' : ''} ago`;
+    const time = this.parseToUtcTimestamp(date);
+    const now = Date.now();
+    let diff = now - time;
+    if (diff < 0) diff = 0;
+
+    return this.format(diff, time);
+  }
+
+  private parseToUtcTimestamp(value: string | Date): number {
+    if (value instanceof Date) {
+      return value.getTime();
+    }
+
+    // Try parsing the value natively. 
+    // Modern browsers usually parse ISO strings without "Z" as local time.
+    let timestamp = Date.parse(value);
+    
+    // Fallback: If parsing fails, try substituting space with 'T' (for SQL timestamps like "2026-03-29 18:08")
+    if (isNaN(timestamp)) {
+      timestamp = Date.parse(value.replace(' ', 'T'));
+    }
+
+    return timestamp;
+  }
+
+  private format(diff: number, originalDate: number): string {
+    const date = new Date(originalDate);
+    const now = new Date();
+
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+
+    const isToday = date.toDateString() === now.toDateString();
+
+    const yesterday = new Date();
+    yesterday.setDate(now.getDate() - 1);
+    const isYesterday = date.toDateString() === yesterday.toDateString();
+
+    const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+
+    if (seconds < 60) {
+      return 'Just now';
+    }
+
+    if (minutes < 60) {
+      if (isToday) return `${minutes}m ago (${timeStr})`;
+      return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+    }
+
+    if (isToday) {
+      return `Today at ${timeStr}`;
+    }
+
+    if (isYesterday) {
+      return `Yesterday at ${timeStr}`;
+    }
+
+    if (hours < 24) {
+      return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+    }
+
+    const days = Math.floor(hours / 24);
+    if (days < 7) {
+      return `${days} day${days !== 1 ? 's' : ''} ago`;
+    }
+
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) + ' ' + timeStr;
   }
 }

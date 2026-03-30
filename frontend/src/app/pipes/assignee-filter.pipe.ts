@@ -12,6 +12,6 @@ import { Task } from '../models/task.model';
 export class AssigneeFilterPipe implements PipeTransform {
   transform(tasks: Task[], userId: number | null): Task[] {
     if (!userId || !tasks) return tasks;
-    return tasks.filter(t => t.assignedToId === userId);
+    return tasks.filter(t => t.assigneeIds?.includes(userId));
   }
 }
