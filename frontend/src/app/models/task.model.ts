@@ -6,10 +6,46 @@ export interface Task {
   priority: TaskPriority;
   dueDate: string;
   userId?: number;
+  userName?: string;
   assignedToId?: number | null;
   assignedToName?: string;
+  assigneeIds?: number[]; // supports multi-assign and filtering
+  assigneeNames?: string[]; // supports names shown in UI
+  teamId?: number;
+  teamName?: string;
   createdAt?: string;
   updatedAt?: string;
+  // Subtask summary (optional)
+  subtaskSummary?: SubtaskSummary;
+}
+
+export interface SubtaskSummary {
+  total: number;
+  completed: number;
+}
+
+export interface Subtask {
+  id?: number;
+  taskId: number;
+  title: string;
+  isComplete: boolean;
+  assignedToId?: number | null;
+  assignedToName?: string;
+  createdById?: number;
+  createdByName?: string;
+  createdAt?: string;
+  completedAt?: string | null;
+}
+
+export interface TaskAttachment {
+  id?: number;
+  taskId: number;
+  uploaderId?: number;
+  uploaderName?: string;
+  originalName: string;
+  mimeType: string;
+  fileSizeBytes: number;
+  uploadedAt?: string;
 }
 
 export enum TaskStatus {
@@ -41,6 +77,28 @@ export interface ActivityLog {
   actionCode: string;
   message: string;
   createdAt?: string;
+}
+
+export interface TimeEntry {
+  id?: number;
+  taskId: number;
+  userId?: number;
+  username?: string;
+  minutes: number;
+  logDate: string;
+  isManual: boolean;
+  description?: string;
+  createdAt?: string;
+}
+
+export interface ActiveTimer {
+  id?: number;
+  taskId: number;
+  userId?: number;
+  username?: string;
+  startTime: string;
+  startedAt?: string; // alias for older templates
+  elapsedSeconds: number;
 }
 
 export interface TaskSummary {

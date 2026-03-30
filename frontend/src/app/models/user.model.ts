@@ -3,8 +3,14 @@ export interface User {
   username: string;
   email: string;
   role?: string;
+  memberType?: string;
+  isActive?: boolean;
+  teams?: string[];
+  teamNames?: string[];
   createdAt?: string;
   updatedAt?: string;
+  avatarColor?: string;
+  bio?: string;
 }
 
 export type UserRole = 'ADMIN' | 'MANAGER' | 'DEVELOPER' | 'TESTER';
