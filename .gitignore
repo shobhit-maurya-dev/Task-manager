@@ -71,3 +71,15 @@ DOCKER.md
 backend/docker-compose.yml
 .vercel
 .env*.local
+application-secrets.properties
+
+# ====================
+# Temporary & Generated files
+# ====================
+plan*.md
+*build_errors*.txt
+*compile_errors*.txt
+*ts_errors*.txt
+test_output.txt
+tmp-playwright-check.js
+frontend_test_final.log
