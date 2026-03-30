@@ -26,5 +26,9 @@ public class RegisterRequest {
     @Size(min = 8, max = 100, message = "Password must be 8–100 characters")
     private String password;
 
-    private String role;
+    /**
+     * Member specialization (DEVELOPER, TESTER, DESIGNER).
+     * This is not the RBAC role; all new users are MEMBER role.
+     */
+    private String memberType;
 }

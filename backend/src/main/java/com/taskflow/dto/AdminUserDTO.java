@@ -5,16 +5,20 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDTO {
-
+public class AdminUserDTO {
     private Long id;
     private String username;
     private String email;
     private String role;
-    private String memberType;
-    private java.util.List<String> teams;
+    private boolean active;
+    private LocalDateTime createdAt;
+    private List<Long> teamIds;
+    private List<String> teamNames;
 }

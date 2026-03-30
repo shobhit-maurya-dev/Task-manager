@@ -33,8 +33,16 @@ public class TaskDTO {
     private LocalDate dueDate;
 
     // F-EXT-02: Assignment
-    private Long assignedToId;
-    private String assignedToName;
+    private java.util.List<Long> assigneeIds;
+    private java.util.List<String> assigneeNames;
+
+    // F-W2-01: Task owner (used for permission checks)
+    private Long userId;
+    private String userName;
+
+    // F-W2-01: Team assignment
+    private Long teamId;
+    private String teamName;
 
     private LocalDateTime createdAt;
 
