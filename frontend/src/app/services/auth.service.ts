@@ -3,7 +3,19 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
+import { auth } from '../config/firebase.config';
+import { 
+  createUserWithEmailAndPassword, 
+  sendEmailVerification, 
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  User as FirebaseUser,
+  getIdToken,
+  sendPasswordResetEmail,
+  confirmPasswordReset
+} from 'firebase/auth';
 import { AuthResponse, LoginRequest, RegisterRequest, User, UserRole } from '../models/user.model';
+import { from, switchMap, catchError, throwError, of, interval, takeWhile, firstValueFrom } from 'rxjs';
 
 const AUTH_API = `${environment.apiUrl}/auth`;
 const TOKEN_KEY = 'auth_token';
@@ -27,27 +39,126 @@ export class AuthService {
   }
 
   register(request: RegisterRequest): Observable<any> {
-    return this.http.post(`${AUTH_API}/register`, request);
-  }
-
-  login(request: LoginRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${AUTH_API}/login`, request).pipe(
-      tap((response: AuthResponse) => {
-        this.storeToken(response.token);
-        const user: User = {
-          id: response.id,
-          username: response.username || '',
-          email: response.email || '',
-          role: response.role || 'DEVELOPER'
-        };
-        this.storeUser(user);
-        this.currentUserSubject.next(user);
-        this.isLoggedInSubject.next(true);
+    // 1. Create user in Firebase
+    return from(createUserWithEmailAndPassword(auth, request.email, request.password)).pipe(
+      switchMap(userCredential => {
+        const firebaseUser = userCredential.user;
+        // 2. Send Email Verification through Firebase
+        return from(sendEmailVerification(firebaseUser)).pipe(
+          switchMap(() => {
+            // 3. ALSO save to backend DB with real password (unverified)
+            // This ensures the real password is stored so login works after verification
+            return this.http.post(`${AUTH_API}/register`, request).pipe(
+              catchError(err => {
+                // If backend save fails (e.g. duplicate), still allow verification flow
+                console.warn('Backend register sync failed:', err);
+                return of({ message: 'Verification email sent' });
+              })
+            );
+          })
+        );
       })
     );
   }
 
+  sendPasswordResetEmail(email: string): Observable<void> {
+    return from(sendPasswordResetEmail(auth, email));
+  }
+
+  confirmPasswordReset(code: string, newPassword: string): Observable<void> {
+    return from(confirmPasswordReset(auth, code, newPassword));
+  }
+
+  // Returns true once user is verified on Firebase
+  pollForVerification(): Observable<boolean> {
+    return interval(1000).pipe(
+      switchMap(async () => {
+        const user = auth.currentUser;
+        if (user) {
+          await user.reload();
+          return user.emailVerified;
+        }
+        return false;
+      }),
+      takeWhile(verified => !verified, true)
+    );
+  }
+
+  // Finalize session by sending Firebase ID Token to backend
+  finalizeFirebaseLogin(): Observable<AuthResponse> {
+    const user = auth.currentUser;
+    if (!user) return throwError(() => new Error('No firebase user found'));
+    
+    return from(getIdToken(user, true)).pipe(
+      switchMap(token => {
+        return this.http.post<AuthResponse>(`${AUTH_API}/firebase-login`, { token }).pipe(
+          tap(response => this.processAuthResponse(response))
+        );
+      })
+    );
+  }
+
+  // JUST Sync with backend (no session start)
+  syncVerifiedUser(): Observable<AuthResponse> {
+    const user = auth.currentUser;
+    if (!user) return throwError(() => new Error('No firebase user found'));
+    
+    return from(getIdToken(user, true)).pipe(
+      switchMap(token => {
+        return this.http.post<AuthResponse>(`${AUTH_API}/firebase-login`, { token });
+      })
+    );
+  }
+
+  login(request: LoginRequest): Observable<AuthResponse> {
+    // Priority: Check backend DB first (enables local accounts like Admin)
+    return this.http.post<AuthResponse>(`${AUTH_API}/login`, request).pipe(
+      tap(response => this.processAuthResponse(response))
+    );
+  }
+
+  private processAuthResponse(response: AuthResponse): void {
+    if (!response.token) {
+      console.log('No token in response, skipping session start.');
+      return;
+    }
+    this.storeToken(response.token);
+
+    // Prefer role from response; fallback to JWT claim if not present
+    let role = response.role;
+    try {
+      const payload = JSON.parse(atob(response.token.split('.')[1]));
+      if (!role && payload?.role) {
+        role = payload.role;
+      }
+    } catch {
+      // ignore malformed token
+    }
+
+    const user: User = {
+      id: response.id,
+      username: response.username || '',
+      email: response.email || '',
+      role: role || 'MEMBER'
+    };
+    this.storeUser(user);
+    this.currentUserSubject.next(user);
+    this.isLoggedInSubject.next(true);
+  }
+
   logout(): void {
+    // Clear all chatbot history keys to ensure a fresh session
+    Object.keys(sessionStorage).forEach(key => {
+      if (key.startsWith('tf_chat_history_')) {
+        sessionStorage.removeItem(key);
+      }
+    });
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('tf_chat_history_')) {
+        localStorage.removeItem(key);
+      }
+    });
+
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     this.currentUserSubject.next(null);
@@ -61,7 +172,7 @@ export class AuthService {
 
   getUserRole(): UserRole {
     const user = this.getCurrentUser();
-    return (user?.role as UserRole) || 'DEVELOPER';
+    return (user?.role as UserRole) || 'MEMBER';
   }
 
   isAdminOrManager(): boolean {

@@ -3,10 +3,13 @@ import { BehaviorSubject } from 'rxjs';
 
 export interface Toast {
   id: number;
-  type: 'success' | 'error' | 'info' | 'warning';
+  type: 'success' | 'error' | 'info' | 'warning' | 'confirm';
   message: string;
   icon: string;
   removing?: boolean;
+  isConfirm?: boolean;
+  onConfirm?: () => void;
+  onCancel?: () => void;
 }
 
 @Injectable({
@@ -31,6 +34,28 @@ export class ToastService {
 
   warning(message: string): void {
     this.addToast('warning', message, 'bi-exclamation-circle-fill');
+  }
+
+  confirm(message: string, onConfirm: () => void, onCancel?: () => void): void {
+    const id = ++this.counter;
+    const toast: Toast = { 
+      id, 
+      type: 'confirm', 
+      message, 
+      icon: 'bi-question-circle-fill',
+      isConfirm: true,
+      onConfirm: () => {
+        onConfirm();
+        this.dismiss(id);
+      },
+      onCancel: () => {
+        if (onCancel) onCancel();
+        this.dismiss(id);
+      }
+    };
+    const current = this.toastsSubject.value;
+    this.toastsSubject.next([...current, toast]);
+    // Confirmation toasts don't auto-dismiss
   }
 
   private addToast(type: Toast['type'], message: string, icon: string): void {
