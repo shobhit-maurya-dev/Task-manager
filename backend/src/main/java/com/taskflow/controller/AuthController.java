@@ -4,6 +4,7 @@ import com.taskflow.dto.AuthResponse;
 import com.taskflow.dto.LoginRequest;
 import com.taskflow.dto.RegisterRequest;
 import com.taskflow.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,8 +22,10 @@ public class AuthController {
     //   Register a new user and return JWT token.
     
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
-        AuthResponse response = authService.register(request);
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request, HttpServletRequest httpRequest) {
+        String userAgent = httpRequest.getHeader("User-Agent");
+        String platform = httpRequest.getHeader("X-Platform");
+        AuthResponse response = authService.register(request, userAgent, platform);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
@@ -31,8 +34,19 @@ public class AuthController {
     //  Authenticate user and return JWT token.
     
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-        AuthResponse response = authService.login(request);
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
+        String userAgent = httpRequest.getHeader("User-Agent");
+        String platform = httpRequest.getHeader("X-Platform");
+        AuthResponse response = authService.login(request, userAgent, platform);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/firebase-login")
+    public ResponseEntity<AuthResponse> firebaseLogin(@RequestBody java.util.Map<String, String> payload, HttpServletRequest httpRequest) {
+        String idToken = payload.get("token");
+        String userAgent = httpRequest.getHeader("User-Agent");
+        String platform = httpRequest.getHeader("X-Platform");
+        AuthResponse response = authService.firebaseLogin(idToken, userAgent, platform);
         return ResponseEntity.ok(response);
     }
 }
