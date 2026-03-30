@@ -1,0 +1,46 @@
+<div class="chatbot-toggle pulse" (click)="toggleChat()" *ngIf="!isOpen">
+  <i class="bi bi-robot"></i>
+</div>
+
+<!-- Chat Window -->
+<div class="chat-window border-0" *ngIf="isOpen">
+  <!-- Header -->
+  <div class="chat-header">
+    <div class="ai-avatar">
+      <i class="bi bi-stars"></i>
+    </div>
+    <div class="header-info grow">
+      <h3>TaskFlow AI</h3>
+      <div class="flex items-center gap-1">
+        <div class="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+        <span class="status">Dev By Ankit</span>
+      </div>
+    </div>
+    <button (click)="toggleChat()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
+      <i class="bi bi-dash-lg text-xl"></i>
+    </button>
+  </div>
+
+  <!-- Messages List -->
+  <div class="chat-messages" #messagesContainer>
+    <div *ngFor="let msg of messages" class="message" [ngClass]="msg.sender">
+      {{ msg.text }}
+      <span class="ts">{{ msg.timestamp | date:'shortTime' }}</span>
+    </div>
+
+    <!-- Thinking Indicator -->
+    <div *ngIf="isThinking" class="message ai thinking flex items-center gap-2">
+      AI is searching your data...
+      <div class="dot-flashing"></div>
+    </div>
+  </div>
+
+  <!-- Input Area -->
+  <form (ngSubmit)="sendMessage()" class="chat-input-container">
+    <input type="text" [(ngModel)]="userInput" name="userInput" placeholder="Ask me something about your tasks..."
+      autocomplete="off">
+    <button type="submit" class="send-btn" [disabled]="!userInput.trim() || isThinking">
+      <i class="bi bi-send-fill"></i>
+    </button>
+  </form>
+</div>

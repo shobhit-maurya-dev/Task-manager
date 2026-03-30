@@ -1,0 +1,287 @@
+/* Chatbot Bubble FAB */
+.chatbot-toggle {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+  z-index: 1000;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@media (max-width: 576px) {
+  .chatbot-toggle {
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    font-size: 1.2rem;
+  }
+}
+
+.chatbot-toggle:hover {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.chatbot-toggle.pulse::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  border-radius: 50%;
+  border: 4px solid #3B82F6;
+  animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  100% { transform: scale(1.3); opacity: 0; }
+}
+
+/* Chat Window - Glassmorphism */
+.chat-window {
+  position: fixed;
+  bottom: 100px;
+  right: 30px;
+  width: 380px;
+  height: 550px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  overflow: hidden;
+  animation: slide-up 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@media (max-width: 576px) {
+  .chat-window {
+    bottom: 80px;
+    right: 15px;
+    left: 15px;
+    width: auto;
+    height: 70vh;
+  }
+}
+
+:host-context(html[data-theme='dark']) .chat-window {
+  background: rgba(15, 23, 42, 0.8);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes slide-up {
+  from { transform: translateY(40px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Header */
+.chat-header {
+  padding: 20px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ai-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+}
+
+.header-info h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+  color: #1E293B;
+}
+
+:host-context(html[data-theme='dark']) .header-info h3 { color: #f1f5f9; }
+
+.status {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #22C55E;
+}
+
+/* Messages Area */
+.chat-messages {
+  flex-grow: 1;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  scroll-behavior: smooth;
+}
+
+.chat-messages::-webkit-scrollbar { width: 4px; }
+.chat-messages::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+
+.message {
+  max-width: 80%;
+  padding: 12px 16px;
+  border-radius: 18px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  position: relative;
+}
+
+.message.ai {
+  align-self: flex-start;
+  background: #FFFFFF;
+  color: #334155;
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+:host-context(html[data-theme='dark']) .message.ai {
+  background: #1E293B;
+  color: #f1f5f9;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.message.user {
+  align-self: flex-end;
+  background: linear-gradient(135deg, #3B82F6, #2563EB);
+  color: white;
+  border-bottom-right-radius: 4px;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+}
+
+.ts {
+  font-size: 0.6rem;
+  opacity: 0.6;
+  display: block;
+  margin-top: 4px;
+  text-align: right;
+}
+
+/* Input Bar */
+.chat-input-container {
+  padding: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  gap: 10px;
+}
+
+input {
+  flex-grow: 1;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 14px;
+  padding: 12px 16px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.2s;
+}
+
+:host-context(html[data-theme='dark']) input {
+  background: rgba(0,0,0,0.2);
+  border-color: rgba(255,255,255,0.1);
+  color: white;
+}
+
+input:focus {
+  border-color: #3B82F6;
+  background: white;
+}
+
+:host-context(html[data-theme='dark']) input:focus {
+  background: rgba(0,0,0,0.4);
+}
+
+.send-btn {
+  width: 45px;
+  height: 45px;
+  border-radius: 12px;
+  background: #3B82F6;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.send-btn:hover:not(:disabled) { transform: translateY(-2px); background: #2563EB; }
+.send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Pulse Animation for Thinking */
+.message.ai.thinking {
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px dashed rgba(59, 130, 246, 0.3);
+  animation: thinking-pulse 2s infinite ease-in-out;
+}
+
+@keyframes thinking-pulse {
+  0%, 100% { opacity: 0.7; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-2px); }
+}
+
+.dot-flashing {
+  display: inline-block;
+  position: relative;
+  width: 5px;
+  height: 5px;
+  border-radius: 5px;
+  background-color: #3B82F6;
+  color: #3B82F6;
+  animation: dot-flashing 1s infinite linear alternate;
+  animation-delay: 0.5s;
+}
+
+.dot-flashing::before, .dot-flashing::after {
+  content: '';
+  display: inline-block;
+  position: absolute;
+  top: 0;
+}
+
+.dot-flashing::before {
+  left: -10px;
+  width: 5px;
+  height: 5px;
+  border-radius: 5px;
+  background-color: #3B82F6;
+  color: #3B82F6;
+  animation: dot-flashing 1s infinite linear alternate;
+  animation-delay: 0s;
+}
+
+.dot-flashing::after {
+  left: 10px;
+  width: 5px;
+  height: 5px;
+  border-radius: 5px;
+  background-color: #3B82F6;
+  color: #3B82F6;
+  animation: dot-flashing 1s infinite linear alternate;
+  animation-delay: 1s;
+}
+
+@keyframes dot-flashing {
+  0% { background-color: #3B82F6; transform: scale(1); }
+  50%, 100% { background-color: rgba(59, 130, 246, 0.2); transform: scale(0.6); }
+}

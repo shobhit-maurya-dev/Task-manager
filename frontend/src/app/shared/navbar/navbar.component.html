@@ -1,7 +1,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark shadow py-2 tf-navbar">
   <div class="container-fluid px-4">
     <a class="navbar-brand fw-bold d-flex align-items-center gap-2" routerLink="/" (click)="closeMenu()" style="font-size:1.3rem;">
-      <img src="/assets/WebLogo.png" alt="TaskFlow" style="width:34px;height:34px;border-radius:6px;">
+      <img src="/assets/WebLogo.png" alt="TaskFlow" style="width:38px;height:40px;border-radius:15px;">
       <span>TaskFlow</span>
     </a>
 
@@ -19,6 +19,79 @@
       </ng-container>
 
       <ng-container *ngIf="isLoggedIn">
+
+        <!-- Notification Bell -->
+        <div class="position-relative me-3">
+          <button class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center tf-notification-btn"
+                  [class.active]="isNotificationsOpen"
+                  (click)="toggleNotifications()" type="button">
+            <i class="bi bi-bell-fill" style="font-size:1.1rem; color: #cbd5e1;"></i>
+            <span *ngIf="unreadCount > 0" 
+                  class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-2 border-slate-900"
+                  style="font-size: 0.6rem; padding: 0.25em 0.5em; margin-top: 5px; margin-left: -5px;">
+              {{ unreadCount > 9 ? '9+' : unreadCount }}
+            </span>
+          </button>
+
+          <!-- Notification Dropdown -->
+          <div class="position-absolute end-0 mt-2 rounded-3 shadow-lg tf-dropdown overflow-hidden"
+               *ngIf="isNotificationsOpen" style="width:320px; z-index:1060; border: 1px solid var(--tf-border);">
+            <div class="px-3 py-3 border-bottom d-flex justify-content-between align-items-center" 
+                 style="background: rgba(255,255,255,0.03); border-color:var(--tf-border)!important;">
+              <div class="fw-black text-uppercase tracking-wider" style="color:var(--tf-text); font-size: 0.75rem;">Notifications</div>
+              <button class="btn btn-link btn-sm text-decoration-none p-0" 
+                      style="font-size: 0.7rem; color: var(--tf-accent);" 
+                      (click)="clearAllNotifications()">Clear All</button>
+            </div>
+            
+            <div class="notification-list" style="max-height: 350px; overflow-y: auto;">
+              <div *ngIf="notifications.length === 0" class="px-4 py-5 text-center opacity-50">
+                <i class="bi bi-bell-slash text-2xl mb-2 d-block"></i>
+                <div class="small fw-bold uppercase tracking-widest">No new alerts</div>
+              </div>
+
+              <div *ngFor="let note of notifications" 
+                   class="notification-item px-3 py-3 border-bottom transition-all cursor-pointer hover-bg-light-dark"
+                   [class.unread]="!note.isRead"
+                   (click)="markAsRead(note.id, $event)"
+                   style="border-color:var(--tf-border)!important;">
+                <div class="d-flex gap-3">
+                  <div class="flex-shrink-0">
+                    <div class="w-8 h-8 rounded-lg d-flex align-items-center justify-content-center"
+                         [ngClass]="{
+                           'bg-blue-500/10 text-blue-500': note.type === 'info',
+                           'bg-green-500/10 text-green-500': note.type === 'success',
+                           'bg-warning-500/10 text-warning': note.type === 'warning',
+                           'bg-danger-500/10 text-danger': note.type === 'error'
+                         }">
+                      <i class="bi" [ngClass]="{
+                        'bi-info-circle': note.type === 'info',
+                        'bi-check-circle': note.type === 'success',
+                        'bi-exclamation-triangle': note.type === 'warning',
+                        'bi-x-circle': note.type === 'error'
+                      }"></i>
+                    </div>
+                  </div>
+                  <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                      <div class="fw-bold small" style="color:var(--tf-text); line-height: 1.2;">{{ note.title }}</div>
+                      <div class="unread-dot w-2 h-2 rounded-full bg-blue-500" *ngIf="!note.isRead"></div>
+                    </div>
+                    <div class="text-muted small" style="font-size: 0.75rem; line-height: 1.3;">{{ note.message }}</div>
+                    <div class="text-muted mt-2" style="font-size: 0.65rem;">{{ note.timestamp | date:'shortTime' }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="px-3 py-2 text-center bg-light-dark">
+              <button class="btn btn-link btn-sm text-decoration-none font-bold uppercase tracking-tighter"
+                      style="font-size: 0.65rem; color: var(--tf-text-muted);"
+                      (click)="isNotificationsOpen = false">Close</button>
+            </div>
+          </div>
+        </div>
+
         <div class="position-relative">
           <button class="btn btn-sm d-flex align-items-center gap-2 px-2 py-1 rounded-pill"
                   style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;"
@@ -43,7 +116,7 @@
             </a>
             <hr class="my-1" style="border-color:var(--tf-border);">
             <button class="dropdown-item d-flex align-items-center gap-2 px-3 py-2 small text-danger tf-dropdown-item"
-                    (click)="logout(); closeDropdowns()">
+                    (click)="logout(); closeDropdowns(); closeMenu()">
               <i class="bi bi-box-arrow-right"></i> Sign Out
             </button>
           </div>
@@ -56,12 +129,19 @@
       </button>
     </div>
 
-    <div class="collapse navbar-collapse order-lg-1" [class.show]="isMenuOpen">
+    <div class="navbar-collapse order-lg-1" [class.show]="isMenuOpen">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item" *ngIf="isLoggedIn">
-          <a class="nav-link d-flex align-items-center gap-1" routerLink="/dashboard" routerLinkActive="active" (click)="closeMenu()">
-            <i class="bi bi-grid-1x2"></i> Dashboard
-          </a>
+          <a class="nav-link" routerLink="/dashboard" routerLinkActive="active" (click)="closeMenu()">Dashboard</a>
+        </li>
+        <li class="nav-item" *ngIf="isLoggedIn">
+          <a class="nav-link" routerLink="/teams" routerLinkActive="active" (click)="closeMenu()">Teams</a>
+        </li>
+        <li class="nav-item" *appHasRole="['ADMIN']">
+          <a class="nav-link" routerLink="/admin" routerLinkActive="active" (click)="closeMenu()">Admin</a>
+        </li>
+        <li class="nav-item" *ngIf="isLoggedIn">
+          <a class="nav-link" routerLink="/settings" routerLinkActive="active" (click)="closeMenu()">Settings</a>
         </li>
       </ul>
       <ul class="navbar-nav d-lg-none mb-2" *ngIf="!isLoggedIn">
