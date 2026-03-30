@@ -6,6 +6,7 @@ import { TaskService } from '../../services/task.service';
 import { ToastService } from '../../services/toast.service';
 import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
+import { NotificationService } from '../../services/notification.service';
 import { Task, TaskStatus, TaskPriority } from '../../models/task.model';
 import { User } from '../../models/user.model';
 import { CommentsComponent } from '../../comments/comments.component';
@@ -24,7 +25,7 @@ export class TaskFormComponent implements OnInit {
     status: TaskStatus.PENDING,
     priority: TaskPriority.MEDIUM,
     dueDate: '',
-    assignedToId: null
+    assigneeIds: []
   };
 
   isEditMode = false;
@@ -54,7 +55,8 @@ export class TaskFormComponent implements OnInit {
     private route: ActivatedRoute,
     private toastService: ToastService,
     private userService: UserService,
-    private authService: AuthService
+    private authService: AuthService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -164,9 +166,22 @@ export class TaskFormComponent implements OnInit {
   }
 
   getSelectedAssigneeName(): string {
-    if (!this.task.assignedToId) return 'Unassigned';
-    const u = this.users.find(u => u.id === this.task.assignedToId);
+    const id = this.assignedToId;
+    if (!id) return 'Unassigned';
+    const u = this.users.find(u => u.id === id);
     return u ? u.username : 'Unknown';
+  }
+
+  get assignedToId(): number | null {
+    return this.task.assigneeIds && this.task.assigneeIds.length > 0 ? this.task.assigneeIds[0] : null;
+  }
+
+  set assignedToId(value: number | null) {
+    if (value === null) {
+      this.task.assigneeIds = [];
+    } else {
+      this.task.assigneeIds = [value];
+    }
   }
 
   private formatDate(date: Date): string {

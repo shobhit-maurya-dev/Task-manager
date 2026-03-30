@@ -1,190 +1,203 @@
-<div class="container py-4">
-  <div class="row justify-content-center">
-    <div class="col-12 col-md-10 col-lg-8 col-xl-6">
-      <!-- Page Header -->
-      <div class="mb-4">
-        <a routerLink="/dashboard" class="text-decoration-none text-muted d-inline-flex align-items-center mb-2">
-          <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
-        </a>
-        <h2 class="fw-bold">
-          <i [class]="isEditMode ? 'bi bi-pencil-square text-primary me-2' : 'bi bi-plus-circle text-primary me-2'"></i>
-          {{ pageTitle }}
-        </h2>
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+  <!-- Page Header -->
+  <div class="mb-8">
+    <a routerLink="/dashboard" class="inline-flex items-center text-[10px] font-black uppercase tracking-[2px] text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors mb-4 group">
+      <i class="bi bi-arrow-left text-sm mr-2 group-hover:-translate-x-1 transition-transform"></i> 
+      Back to Workspace
+    </a>
+    <div class="flex items-center gap-4">
+      <div class="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+        <i [class]="isEditMode ? 'bi bi-pencil-square text-2xl' : 'bi bi-plus-lg text-2xl'"></i>
       </div>
-
-      <!-- Loading Spinner -->
-      <div *ngIf="isLoading" class="text-center py-5">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-        <p class="text-muted mt-3">Loading task...</p>
+      <div>
+        <h1 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{{ pageTitle }}</h1>
+        <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">Configure your task parameters below</p>
       </div>
+    </div>
+  </div>
 
-      <!-- Form Card -->
-      <div class="card border-0 shadow-sm rounded-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg" *ngIf="!isLoading">
-        <div class="card-body p-4 p-md-5">
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading" class="flex flex-col items-center justify-center py-20 space-y-4">
+    <div class="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
+    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Hydrating Form...</p>
+  </div>
+
+  <!-- Form Card -->
+  <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-[2.5rem] shadow-sm overflow-hidden" *ngIf="!isLoading">
+    <div class="p-8 sm:p-12">
       
-          <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show d-flex align-items-center" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-            <span>{{ errorMessage }}</span>
-            <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+      <div *ngIf="errorMessage" class="mb-8 p-4 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-2xl flex items-start gap-3 animate-in fade-in zoom-in-95">
+        <i class="bi bi-exclamation-circle-fill text-red-500 mt-0.5"></i>
+        <div class="flex-1">
+          <p class="text-xs font-bold text-red-800 dark:text-red-400 uppercase tracking-wide">Validation Error</p>
+          <p class="text-xs text-red-700 dark:text-red-400/80 mt-0.5">{{ errorMessage }}</p>
+        </div>
+        <button (click)="errorMessage = ''" class="text-red-400 hover:text-red-600 transition-colors">
+          <i class="bi bi-x-lg text-xs"></i>
+        </button>
+      </div>
+
+      <!-- Task Form -->
+      <form (ngSubmit)="onSubmit()" #taskForm="ngForm" class="space-y-8">
+        <!-- Title -->
+        <div class="group">
+          <label for="title" class="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[2px] mb-3 px-1 group-focus-within:text-blue-600 transition-colors">
+            Task Heading <span class="text-red-500">*</span>
+          </label>
+          <div class="relative">
+            <input
+              type="text"
+              class="w-full px-6 py-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl text-sm font-bold text-slate-800 dark:text-white placeholder:text-slate-400 outline-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all"
+              id="title"
+              name="title"
+              [(ngModel)]="task.title"
+              placeholder="What needs to be done?"
+              required
+              maxlength="100"
+              #titleInput="ngModel"
+              [class.border-red-500]="titleInput.touched && titleInput.invalid">
+          </div>
+          <div class="mt-2 px-1 flex justify-between items-center">
+            <p *ngIf="titleInput.touched && titleInput.invalid" class="text-[9px] font-black text-red-500 uppercase">Input required</p>
+            <div *ngIf="!(titleInput.touched && titleInput.invalid)"></div>
+            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">{{ task.title.length || 0 }}/100</p>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="group">
+          <label for="description" class="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[2px] mb-3 px-1 group-focus-within:text-blue-600 transition-colors">
+            Context & Details
+          </label>
+          <textarea
+            class="w-full px-6 py-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl text-sm font-bold text-slate-800 dark:text-white placeholder:text-slate-400 outline-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all resize-none min-h-[140px]"
+            id="description"
+            name="description"
+            [(ngModel)]="task.description"
+            placeholder="Add specific details or instructions..."
+            maxlength="500"></textarea>
+          <div class="mt-2 px-1 text-right">
+            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">{{ task.description?.length || 0 }}/500</p>
+          </div>
+        </div>
+
+        <!-- Row: Status & Due Date -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
+          <!-- Status -->
+          <div class="group">
+            <label for="status" class="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[2px] mb-3 px-1 group-focus-within:text-blue-600 transition-colors">
+              Workflow Status
+            </label>
+            <div class="relative">
+              <select
+                class="w-full px-6 py-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl text-sm font-bold text-slate-800 dark:text-white outline-none appearance-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all cursor-pointer"
+                id="status"
+                name="status"
+                [(ngModel)]="task.status">
+                <option *ngFor="let opt of statusOptions" [value]="opt.value">{{ opt.label }}</option>
+              </select>
+              <i class="bi bi-chevron-down absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+            </div>
           </div>
 
-          <!-- Task Form -->
-          <form (ngSubmit)="onSubmit()" #taskForm="ngForm">
-            <!-- Title -->
-            <div class="mb-3">
-              <label for="title" class="form-label fw-semibold">
-                <i class="bi bi-type me-1"></i> Title <span class="text-danger">*</span>
-              </label>
-              <input
-                type="text"
-                class="form-control form-control-lg"
-                id="title"
-                name="title"
-                [(ngModel)]="task.title"
-                placeholder="What needs to be done?"
-                required
-                maxlength="100"
-                #titleInput="ngModel"
-                [class.is-invalid]="titleInput.touched && titleInput.invalid">
-              <div *ngIf="titleInput.touched && titleInput.invalid" class="invalid-feedback">
-                Title is required.
-              </div>
-              <small class="text-muted">{{ task.title.length || 0 }}/100 characters</small>
-            </div>
-
-            <!-- Description -->
-            <div class="mb-3">
-              <label for="description" class="form-label fw-semibold">
-                <i class="bi bi-text-paragraph me-1"></i> Description
-              </label>
-              <textarea
-                class="form-control resize-y min-h-[100px]"
-                id="description"
-                name="description"
-                [(ngModel)]="task.description"
-                placeholder="Add details about this task (optional)"
-                rows="4"
-                maxlength="500"></textarea>
-              <small class="text-muted">{{ task.description?.length || 0 }}/500 characters</small>
-            </div>
-
-            <!-- Status & Due Date Row -->
-            <div class="row mb-3">
-              <!-- Status -->
-              <div class="col-12 col-md-6 mb-3 mb-md-0">
-                <label for="status" class="form-label fw-semibold">
-                  <i class="bi bi-flag me-1"></i> Status
-                </label>
-                <select
-                  class="form-select form-select-lg"
-                  id="status"
-                  name="status"
-                  [(ngModel)]="task.status">
-                  <option *ngFor="let opt of statusOptions" [value]="opt.value">
-                    {{ opt.label }}
-                  </option>
-                </select>
-              </div>
-
-              <!-- Due Date -->
-              <div class="col-12 col-md-6">
-                <label for="dueDate" class="form-label fw-semibold">
-                  <i class="bi bi-calendar-event me-1"></i> Due Date <span class="text-danger">*</span>
-                </label>
-                <input
-                  type="date"
-                  class="form-control form-control-lg"
-                  id="dueDate"
-                  name="dueDate"
-                  [(ngModel)]="task.dueDate"
-                  required
-                  [attr.min]="isEditMode ? null : todayDate"
-                  #dueDateInput="ngModel"
-                  [class.is-invalid]="dueDateInput.touched && dueDateInput.invalid">
-                <div *ngIf="dueDateInput.touched && dueDateInput.invalid" class="invalid-feedback">
-                  Due date is required.
-                </div>
-              </div>
-            </div>
-
-            <!-- NEW fields highlighted in amber (F-EXT-02 + F-EXT-03) -->
-            <div class="tf-new-fields-highlight rounded-3 p-3 mb-4">
-              <div class="row">
-                <!-- Priority -->
-                <div class="col-12 col-md-6 mb-3 mb-md-0">
-                  <label for="priority" class="form-label fw-semibold">
-                    <i class="bi bi-exclamation-circle me-1"></i> Priority
-                  </label>
-                  <select
-                    class="form-select form-select-lg"
-                    id="priority"
-                    name="priority"
-                    [(ngModel)]="task.priority">
-                    <option *ngFor="let opt of priorityOptions" [value]="opt.value">
-                      {{ opt.label }}
-                    </option>
-                  </select>
-                  <!-- Inline priority badge preview -->
-                  <div class="d-flex gap-1 mt-2">
-                    <span class="badge rounded-pill tf-priority-high" style="font-size:0.6rem;" [style.opacity]="task.priority === 'HIGH' ? '1' : '0.4'">HIGH</span>
-                    <span class="badge rounded-pill tf-priority-medium" style="font-size:0.6rem;" [style.opacity]="task.priority === 'MEDIUM' ? '1' : '0.4'">MEDIUM</span>
-                    <span class="badge rounded-pill tf-priority-low" style="font-size:0.6rem;" [style.opacity]="task.priority === 'LOW' ? '1' : '0.4'">LOW</span>
-                  </div>
-                </div>
-
-                <!-- Assign To (only visible for Admin/Manager) -->
-                <div class="col-12 col-md-6" *ngIf="canAssign">
-                  <label for="assignedTo" class="form-label fw-semibold">
-                    <i class="bi bi-person-plus me-1"></i> Assign To
-                  </label>
-                  <select
-                    class="form-select form-select-lg"
-                    id="assignedTo"
-                    name="assignedTo"
-                    [(ngModel)]="task.assignedToId">
-                    <option [ngValue]="null">— Unassigned —</option>
-                    <option *ngFor="let user of users" [ngValue]="user.id">{{ user.username }} · {{ user.email }} ({{ user.role }})</option>
-                  </select>
-                  <!-- Avatar preview for selected assignee -->
-                  <div class="mt-2" *ngIf="task.assignedToId">
-                    <span class="d-inline-flex align-items-center justify-content-center rounded-circle text-white fw-bold"
-                          style="width:28px;height:28px;font-size:0.7rem;background:linear-gradient(135deg,#3B82F6,#8B5CF6);">
-                      {{ getAssigneeInitial() }}
-                    </span>
-                    <small class="ms-1" style="color:var(--tf-text-muted);font-size:0.75rem;">{{ getSelectedAssigneeName() }}</small>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="d-flex gap-3">
-              <button
-                type="submit"
-                class="btn btn-primary btn-lg flex-fill fw-semibold"
-                [disabled]="isSaving">
-                <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2" role="status"></span>
-                <i *ngIf="!isSaving" [class]="isEditMode ? 'bi bi-check-lg me-1' : 'bi bi-plus-circle me-1'"></i>
-                {{ isSaving ? 'Saving...' : (isEditMode ? 'Update Task' : 'Create Task') }}
-              </button>
-              <button
-                type="button"
-                class="btn btn-outline-secondary btn-lg"
-                (click)="cancel()">
-                Cancel
-              </button>
-            </div>
-          </form>
+          <!-- Due Date -->
+          <div class="group">
+            <label for="dueDate" class="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[2px] mb-3 px-1 group-focus-within:text-blue-600 transition-colors">
+              Deadline <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="date"
+              class="w-full px-6 py-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl text-sm font-bold text-slate-800 dark:text-white outline-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all"
+              id="dueDate"
+              name="dueDate"
+              [(ngModel)]="task.dueDate"
+              required
+              [attr.min]="isEditMode ? null : todayDate"
+              #dueDateInput="ngModel"
+              [class.border-red-500]="dueDateInput.touched && dueDateInput.invalid">
+          </div>
         </div>
-      </div>
 
-      <!-- Comments Section (only in edit mode) -->
-      <div *ngIf="isEditMode && taskId" class="card border-0 shadow-sm rounded-4 mt-4">
-        <div class="card-body p-4">
-          <app-comments [taskId]="taskId"></app-comments>
+        <!-- Row: Priority & Assignment -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 p-8 bg-slate-50 dark:bg-white/5 rounded-[2rem] border border-slate-100 dark:border-white/5 mt-12">
+          <!-- Priority -->
+          <div class="group">
+            <label for="priority" class="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[2px] mb-3 px-1 group-focus-within:text-blue-600 transition-colors">
+              Execution Priority
+            </label>
+            <div class="relative mb-3">
+              <select
+                class="w-full px-6 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl text-sm font-bold text-slate-800 dark:text-white outline-none appearance-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all cursor-pointer"
+                id="priority"
+                name="priority"
+                [(ngModel)]="task.priority">
+                <option *ngFor="let opt of priorityOptions" [value]="opt.value">{{ opt.label }}</option>
+              </select>
+              <i class="bi bi-chevron-down absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+            </div>
+            <!-- Priority Preview -->
+            <div class="flex gap-2 px-1">
+              <span class="px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest transition-opacity" 
+                    [class]="task.priority === 'HIGH' ? 'bg-red-500 text-white shadow-lg shadow-red-500/20' : 'bg-slate-200 dark:bg-white/10 text-slate-400 opacity-50'">High</span>
+              <span class="px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest transition-opacity" 
+                    [class]="task.priority === 'MEDIUM' ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' : 'bg-slate-200 dark:bg-white/10 text-slate-400 opacity-50'">Medium</span>
+              <span class="px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest transition-opacity" 
+                    [class]="task.priority === 'LOW' ? 'bg-green-500 text-white shadow-lg shadow-green-500/20' : 'bg-slate-200 dark:bg-white/10 text-slate-400 opacity-50'">Low</span>
+            </div>
+          </div>
+
+          <!-- Assign To -->
+          <div class="group" *ngIf="canAssign">
+            <label for="assignedTo" class="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[2px] mb-3 px-1 group-focus-within:text-blue-600 transition-colors">
+              Responsible Agent
+            </label>
+            <div class="relative">
+              <select
+                class="w-full px-6 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl text-sm font-bold text-slate-800 dark:text-white outline-none appearance-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all cursor-pointer"
+                id="assignedTo"
+                name="assignedTo"
+                [(ngModel)]="assignedToId">
+                <option [ngValue]="null">Select Participant</option>
+                <option *ngFor="let user of users" [ngValue]="user.id">{{ user.username }} &bull; {{ user.role }}</option>
+              </select>
+              <i class="bi bi-person-plus absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+            </div>
+            <!-- Assignee Preview -->
+            <div class="mt-3 px-1 flex items-center gap-3 animate-in fade-in" *ngIf="assignedToId">
+              <div class="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-[10px] font-black text-white shadow-sm">
+                {{ getAssigneeInitial() }}
+              </div>
+              <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{{ getSelectedAssigneeName() }}</p>
+            </div>
+          </div>
         </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row gap-4 pt-10">
+          <button
+            type="submit"
+            class="flex-[2] py-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-black uppercase tracking-[2px] rounded-2xl shadow-xl shadow-blue-500/30 transition-all active:scale-95 flex items-center justify-center gap-3"
+            [disabled]="isSaving || taskForm.invalid">
+            <span *ngIf="isSaving" class="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></span>
+            <i *ngIf="!isSaving" [class]="isEditMode ? 'bi bi-check2-circle text-lg' : 'bi bi-rocket-takeoff text-lg'"></i>
+            {{ isSaving ? 'Processing...' : (isEditMode ? 'Confirm Changes' : 'Initialize Task') }}
+          </button>
+          <button
+            type="button"
+            class="flex-1 py-4 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-slate-400 text-xs font-black uppercase tracking-[2px] rounded-2xl transition-all"
+            (click)="cancel()">
+            Disregard
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Comments Section (Side Panel / Drawer context) -->
+  <div *ngIf="isEditMode && taskId" class="mt-12 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-[2.5rem] shadow-sm overflow-hidden">
+      <div class="p-8 sm:p-12">
+        <app-comments [taskId]="taskId"></app-comments>
       </div>
     </div>
   </div>

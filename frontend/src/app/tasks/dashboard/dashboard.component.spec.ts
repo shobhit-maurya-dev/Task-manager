@@ -24,10 +24,11 @@ describe('DashboardComponent', () => {
   ];
 
   beforeEach(async () => {
-    taskServiceSpy = jasmine.createSpyObj('TaskService', ['getAllTasks', 'updateTask', 'deleteTask']);
+    taskServiceSpy = jasmine.createSpyObj('TaskService', ['getAllTasks', 'updateTask', 'deleteTask', 'getSubtaskSummary']);
     taskServiceSpy.getAllTasks.and.callFake(() => of(mockTasks.map(t => ({ ...t }))));
     taskServiceSpy.updateTask.and.returnValue(of({ ...mockTasks[0] }));
     taskServiceSpy.deleteTask.and.returnValue(of(undefined));
+    taskServiceSpy.getSubtaskSummary.and.returnValue(of({ total: 0, completed: 0 }));
 
     userServiceSpy = jasmine.createSpyObj('UserService', ['getAssignableUsers']);
     userServiceSpy.getAssignableUsers.and.returnValue(of([]));
