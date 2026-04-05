@@ -226,6 +226,20 @@ public class TaskService {
             notifyAssignees(savedTask, user);
         }
 
+        // Broadcast to team if assigned to one
+        if (savedTask.getTeam() != null) {
+            WebsocketNotificationDTO teamNotif = WebsocketNotificationDTO.builder()
+                    .type("TASK_CREATED")
+                    .timestamp(Instant.now())
+                    .initiatedBy(user.getEmail())
+                    .payload(Map.of(
+                        "taskData", toDTO(savedTask),
+                        "message", "New task created: " + savedTask.getTitle()
+                    ))
+                    .build();
+            notificationService.notifyTeam(savedTask.getTeam().getId(), teamNotif);
+        }
+
         return toDTO(savedTask);
     }
 
@@ -373,6 +387,20 @@ public class TaskService {
             notifyCompletion(updatedTask, user);
         }
 
+        // Broadcast update to team
+        if (updatedTask.getTeam() != null) {
+            WebsocketNotificationDTO teamNotif = WebsocketNotificationDTO.builder()
+                    .type("TASK_UPDATED")
+                    .timestamp(Instant.now())
+                    .initiatedBy(user.getEmail())
+                    .payload(Map.of(
+                        "taskData", toDTO(updatedTask),
+                        "message", "Task updated: " + updatedTask.getTitle()
+                    ))
+                    .build();
+            notificationService.notifyTeam(updatedTask.getTeam().getId(), teamNotif);
+        }
+
         return toDTO(updatedTask);
     }
 
@@ -385,24 +413,28 @@ public class TaskService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Task not found with id: " + taskId));
 
-        boolean isOwner = task.getUser().getId().equals(user.getId());
-        boolean isManagerOfTeam = task.getTeam() != null
-                && task.getTeam().getManager().getId().equals(user.getId());
+        // Admin check prioritized for performance and to bypass ownership evaluation
         boolean isAdmin = user.getRole() == Role.ADMIN;
+        boolean isOwner = task.getUser() != null && task.getUser().getId().equals(user.getId());
+        boolean isManagerOfTeam = task.getTeam() != null
+                && task.getTeam().getManager() != null
+                && task.getTeam().getManager().getId().equals(user.getId());
 
-        if (!(isOwner || isManagerOfTeam || isAdmin)) {
-            throw new ForbiddenException("Not allowed to delete this task");
+        if (!(isAdmin || isOwner || isManagerOfTeam)) {
+            throw new ForbiddenException("Only Admin, Team Manager, or Task Owner can delete this task.");
         }
 
         String taskTitle = task.getTitle();
 
         // Notify task owner and assignees before deletion
         Map<String, Object> deletePayload = new HashMap<>();
+        deletePayload.put("taskId", taskId);
         deletePayload.put("taskTitle", taskTitle);
         deletePayload.put("message", user.getUsername() + " deleted task \"" + taskTitle + "\"");
         WebsocketNotificationDTO deleteNotif = WebsocketNotificationDTO.builder()
                 .type("TASK_DELETED")
                 .timestamp(Instant.now())
+                .initiatedBy(user.getEmail())
                 .payload(deletePayload)
                 .build();
         if (task.getUser() != null && !task.getUser().getId().equals(user.getId())) {
@@ -412,6 +444,11 @@ public class TaskService {
             if (!assignee.getId().equals(user.getId())) {
                 notificationService.notifyUser(assignee.getEmail(), deleteNotif);
             }
+        }
+
+        // Broadcast delete to team
+        if (task.getTeam() != null) {
+            notificationService.notifyTeam(task.getTeam().getId(), deleteNotif);
         }
 
         // Clear FK references before deleting the task

@@ -27,4 +27,9 @@ public class WebsocketNotificationDTO {
      * Optional payload containing any metadata the client needs.
      */
     private Map<String, Object> payload;
+
+    /**
+     * User email who initiated the action (for filtering).
+     */
+    private String initiatedBy;
 }
