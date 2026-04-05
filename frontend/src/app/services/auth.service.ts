@@ -61,6 +61,18 @@ export class AuthService {
     );
   }
 
+  checkEmailExists(email: string): Observable<{ exists: boolean }> {
+    return this.http.get<{ exists: boolean }>(`${AUTH_API}/check-email`, {
+      params: { email }
+    });
+  }
+
+  checkUsernameExists(username: string): Observable<{ exists: boolean }> {
+    return this.http.get<{ exists: boolean }>(`${AUTH_API}/check-username`, {
+      params: { username }
+    });
+  }
+
   sendPasswordResetEmail(email: string): Observable<void> {
     return from(sendPasswordResetEmail(auth, email));
   }
