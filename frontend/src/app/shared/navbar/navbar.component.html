@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg navbar-dark shadow py-2 tf-navbar">
+<nav class="navbar navbar-expand-lg shadow py-2 tf-navbar">
   <div class="container-fluid px-4">
     <a class="navbar-brand fw-bold d-flex align-items-center gap-2" routerLink="/" (click)="closeMenu()" style="font-size:1.3rem;">
       <img src="/assets/WebLogo.png" alt="TaskFlow" style="width:38px;height:40px;border-radius:15px;">
@@ -8,11 +8,13 @@
     <div class="d-flex align-items-center gap-2 ms-auto order-lg-2">
       <button class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center tf-dark-toggle"
               (click)="toggleDarkMode()" [title]="isDarkMode ? 'Light Mode' : 'Dark Mode'">
-        <i [class]="isDarkMode ? 'bi bi-sun-fill text-warning' : 'bi bi-moon-stars-fill text-white'" style="font-size:0.95rem;"></i>
+        <i [class]="isDarkMode ? 'bi bi-sun-fill text-warning' : 'bi bi-moon-stars-fill'" 
+           [style.color]="isDarkMode ? '' : 'var(--tf-nav-text)'"
+           style="font-size:0.95rem;"></i>
       </button>
 
       <ng-container *ngIf="!isLoggedIn">
-        <a class="nav-link text-white d-none d-lg-inline-block px-2" routerLink="/login" routerLinkActive="active" (click)="closeMenu()">Login</a>
+        <a class="nav-link d-none d-lg-inline-block px-2" routerLink="/login" routerLinkActive="active" (click)="closeMenu()">Login</a>
         <a class="btn btn-sm px-3 py-1 fw-semibold d-none d-lg-inline-block"
            style="background:linear-gradient(135deg,#3B82F6,#8B5CF6);color:#fff;border:none;border-radius:20px;"
            routerLink="/register" (click)="closeMenu()">Register</a>
@@ -94,10 +96,10 @@
 
         <div class="position-relative">
           <button class="btn btn-sm d-flex align-items-center gap-2 px-2 py-1 rounded-pill"
-                  style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;"
+                  style="background:rgba(var(--tf-nav-text-rgb), 0.05); border:1px solid rgba(var(--tf-nav-text-rgb), 0.1); color:var(--tf-nav-text);"
                   (click)="toggleUserDropdown()" type="button">
-            <span class="d-inline-flex align-items-center justify-content-center rounded-circle text-white fw-bold"
-                  style="width:30px;height:30px;background:linear-gradient(135deg,#3B82F6,#8B5CF6);font-size:0.8rem;">
+            <span class="d-inline-flex align-items-center justify-content-center rounded-circle fw-bold"
+                  style="width:30px;height:30px;background:linear-gradient(135deg,#3B82F6,#8B5CF6);font-size:0.8rem;color:white;">
               {{ (currentUser?.username || 'U').charAt(0).toUpperCase() }}
             </span>
             <span class="fw-semibold d-none d-sm-inline small">{{ currentUser?.username || 'User' }}</span>
