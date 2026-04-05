@@ -49,4 +49,20 @@ public class AuthController {
         AuthResponse response = authService.firebaseLogin(idToken, userAgent, platform);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/check-email")
+    public ResponseEntity<java.util.Map<String, Boolean>> checkEmail(@RequestParam String email) {
+        boolean exists = authService.existsByEmail(email);
+        java.util.Map<String, Boolean> response = new java.util.HashMap<>();
+        response.put("exists", exists);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/check-username")
+    public ResponseEntity<java.util.Map<String, Boolean>> checkUsername(@RequestParam String username) {
+        boolean exists = authService.existsByUsername(username);
+        java.util.Map<String, Boolean> response = new java.util.HashMap<>();
+        response.put("exists", exists);
+        return ResponseEntity.ok(response);
+    }
 }

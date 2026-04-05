@@ -160,4 +160,12 @@ public class AuthService {
         // temporarily
         System.out.println("[AUTH] Manual OTP sending requested for " + email + " but Firebase handles it now.");
     }
+
+    public boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
+    public boolean existsByUsername(String username) {
+        return userRepository.existsByUsername(username);
+    }
 }
