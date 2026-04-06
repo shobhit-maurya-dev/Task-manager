@@ -38,7 +38,6 @@ desktop.ini
 # ====================
 *.env
 *.env.local
-frontend/src/app/config/firebase.config.ts
 
 # ====================
 # Logs
@@ -91,5 +90,8 @@ frontend_test_final.log
 # User Ignored Output Files
 # ====================
 project_report.md
+log8.txt
+log
+backend/tree.txt
 gitlog.txt
 test-upload*.txt
