@@ -23,7 +23,9 @@ public class DatabaseConfig {
         if (databaseUrl != null && databaseUrl.startsWith("postgresql://")) {
             // Handle Supabase connection pooler URL
             try {
-                URI uri = new URI(databaseUrl);
+                // URL decode the database URL to handle special characters in password
+                String decodedUrl = java.net.URLDecoder.decode(databaseUrl, "UTF-8");
+                URI uri = new URI(decodedUrl);
                 String host = uri.getHost();
                 int port = uri.getPort();
                 String path = uri.getPath();
@@ -39,7 +41,8 @@ public class DatabaseConfig {
                 if (userInfo != null && userInfo.contains(":")) {
                     String[] parts = userInfo.split(":");
                     username = parts[0];
-                    password = parts[1];
+                    // Re-encode the password to handle special characters
+                    password = java.net.URLDecoder.decode(parts[1], "UTF-8");
                 }
 
                 String jdbcUrl = "jdbc:postgresql://" + host + ":" + port + "/" + path;
@@ -55,6 +58,8 @@ public class DatabaseConfig {
                     .build();
 
             } catch (Exception e) {
+                System.err.println("Failed to parse DATABASE_URL: " + databaseUrl);
+                e.printStackTrace();
                 throw new RuntimeException("Failed to parse DATABASE_URL: " + databaseUrl, e);
             }
         } else {
