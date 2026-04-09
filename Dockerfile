@@ -1,7 +1,7 @@
 FROM eclipse-temurin:17-jdk-jammy AS build
 WORKDIR /app
-COPY backend/pom.xml .
-COPY backend/src ./src
+COPY pom.xml .
+COPY src ./src
 RUN apt-get update && apt-get install -y maven && mvn clean package -DskipTests
 
 FROM eclipse-temurin:17-jre-jammy

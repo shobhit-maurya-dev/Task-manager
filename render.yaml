@@ -5,15 +5,17 @@ services:
     dockerfilePath: ./Dockerfile
     dockerContext: .
     envVars:
+      - key: PORT
+        value: 8080
       - key: DATABASE_URL
-        value: jdbc:postgresql://db.kucmquncubtheipkzzke.supabase.co:5432/postgres?sslmode=require
+        value: postgresql://postgres.kucmquncubtheipkzzke:fRx?sz.,$6v4kF#@aws-1-ap-south-1.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1
       - key: DATABASE_USERNAME
         value: postgres
       - key: DATABASE_PASSWORD
       - key: JWT_SECRET
         generateValue: true
       - key: CORS_ORIGINS
-        value: https://taskflow-XXXX.vercel.app
+        value: https://taskmanager-lac-alpha-73.vercel.app
       - key: DDL_AUTO
         value: update
       - key: LOG_LEVEL
