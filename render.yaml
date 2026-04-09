@@ -6,8 +6,11 @@ services:
     dockerContext: .
     envVars:
       - key: DATABASE_URL
+        value: jdbc:postgresql://db.kucmquncubtheipkzzke.supabase.co:5432/postgres?sslmode=require
       - key: DATABASE_USERNAME
+        value: postgres
       - key: DATABASE_PASSWORD
+        value: your-supabase-password
       - key: JWT_SECRET
         generateValue: true
       - key: CORS_ORIGINS
