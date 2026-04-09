@@ -5,13 +5,12 @@ services:
     dockerfilePath: ./Dockerfile
     dockerContext: .
     envVars:
-      - key: PORT
-        value: 8080
       - key: DATABASE_URL
-        value: postgresql://postgres.kucmquncubtheipkzzke:fRx?sz.,$6v4kF#@aws-1-ap-south-1.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1
+        value: jdbc:postgresql://aws-1-ap-south-1.pooler.supabase.com:6543/postgres?sslmode=require&pgbouncer=true&connection_limit=1
       - key: DATABASE_USERNAME
-        value: postgres
+        value: postgres.kucmquncubtheipkzzke
       - key: DATABASE_PASSWORD
+        value: "" # Set the real password in Render dashboard as a secret, do not commit it
       - key: JWT_SECRET
         generateValue: true
       - key: CORS_ORIGINS

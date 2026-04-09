@@ -21,28 +21,52 @@ public class DatabaseConfig {
     @Primary
     public DataSource dataSource() {
         if (databaseUrl != null && databaseUrl.startsWith("postgresql://")) {
-            // Handle Supabase connection pooler URL
+            // Handle Supabase connection pooler URL without relying on URI parsing
             try {
-                // URL decode the database URL to handle special characters in password
-                String decodedUrl = java.net.URLDecoder.decode(databaseUrl, "UTF-8");
-                URI uri = new URI(decodedUrl);
-                String host = uri.getHost();
-                int port = uri.getPort();
-                String path = uri.getPath();
-                if (path.startsWith("/")) {
-                    path = path.substring(1); // Remove leading slash
+                String raw = databaseUrl.substring("postgresql://".length());
+                int atIndex = raw.lastIndexOf('@');
+                if (atIndex < 0) {
+                    throw new IllegalArgumentException("Invalid pooler URL, missing '@' separator");
                 }
-                String userInfo = uri.getUserInfo();
-                String query = uri.getQuery();
 
+                String userInfo = raw.substring(0, atIndex);
+                String hostPart = raw.substring(atIndex + 1);
                 String username = null;
                 String password = null;
 
-                if (userInfo != null && userInfo.contains(":")) {
-                    String[] parts = userInfo.split(":");
-                    username = parts[0];
-                    // Re-encode the password to handle special characters
-                    password = java.net.URLDecoder.decode(parts[1], "UTF-8");
+                int colonIndex = userInfo.indexOf(':');
+                if (colonIndex >= 0) {
+                    username = userInfo.substring(0, colonIndex);
+                    password = userInfo.substring(colonIndex + 1);
+                }
+
+                int slashIndex = hostPart.indexOf('/');
+                if (slashIndex < 0) {
+                    throw new IllegalArgumentException("Invalid pooler URL, missing '/' after host");
+                }
+
+                String hostPort = hostPart.substring(0, slashIndex);
+                String pathAndQuery = hostPart.substring(slashIndex + 1);
+                String host;
+                int port = 5432;
+
+                int hostColon = hostPort.lastIndexOf(':');
+                if (hostColon >= 0) {
+                    host = hostPort.substring(0, hostColon);
+                    String portText = hostPort.substring(hostColon + 1);
+                    if (!portText.isEmpty()) {
+                        port = Integer.parseInt(portText);
+                    }
+                } else {
+                    host = hostPort;
+                }
+
+                String path = pathAndQuery;
+                String query = null;
+                int queryIndex = pathAndQuery.indexOf('?');
+                if (queryIndex >= 0) {
+                    path = pathAndQuery.substring(0, queryIndex);
+                    query = pathAndQuery.substring(queryIndex + 1);
                 }
 
                 String jdbcUrl = "jdbc:postgresql://" + host + ":" + port + "/" + path;
